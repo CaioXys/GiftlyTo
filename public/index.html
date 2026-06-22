@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyGift — Lista de Presentes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Confete decorativo de fundo -->
+    <div class="confete-bg" aria-hidden="true"></div>
+
+    <header class="hero">
+      <div class="hero-conteudo">
+        <span class="hero-eyebrow">MyGift • Lista de presentes</span>
+        <h1 class="hero-titulo" id="tituloFesta">Carregando...</h1>
+        <p class="hero-mensagem" id="mensagemFesta"></p>
+
+        <div class="contagem" id="contagem" aria-live="polite">
+          <div class="contagem-item">
+            <span class="contagem-numero" id="dias">--</span>
+            <span class="contagem-label">dias</span>
+          </div>
+          <div class="contagem-item">
+            <span class="contagem-numero" id="horas">--</span>
+            <span class="contagem-label">horas</span>
+          </div>
+          <div class="contagem-item">
+            <span class="contagem-numero" id="minutos">--</span>
+            <span class="contagem-label">min</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="conteudo">
+      <div class="filtros" id="filtros">
+        <button class="filtro-btn ativo" data-categoria="todos">Todos</button>
+      </div>
+
+      <section class="grid-presentes" id="gridPresentes" aria-live="polite">
+        <!-- Cards inseridos via JS -->
+      </section>
+
+      <p class="estado-vazio" id="estadoVazio" hidden>
+        Nenhum presente nessa categoria ainda. Volte mais tarde! 🎈
+      </p>
+    </main>
+
+    <footer class="rodape">
+      <p>Feito com 💛 para celebrar essa data tão especial.</p>
+    </footer>
+
+    <!-- Modal de boas-vindas (pedir nome uma única vez) -->
+    <div class="modal-overlay" id="modalBoasVindas" hidden>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalBoasVindasTitulo"
+      >
+        <h2 class="modal-titulo" id="modalBoasVindasTitulo">Bem-vindo! 🎁</h2>
+        <p class="modal-descricao">
+          Qual é o seu nome? Usaremos para registrar sua reserva.
+        </p>
+
+        <form id="formBoasVindas">
+          <input
+            type="text"
+            id="inputNomeBoasVindas"
+            placeholder="Como podemos te chamar?"
+            required
+            autocomplete="off"
+          />
+          <button type="submit" class="btn-confirmar">Começar</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal de reserva -->
+    <div class="modal-overlay" id="modalReserva" hidden>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitulo"
+      >
+        <button class="modal-fechar" id="modalFechar" aria-label="Fechar">
+          ×
+        </button>
+        <h2 class="modal-titulo" id="modalTitulo">Reservar presente</h2>
+        <p class="modal-presente-nome" id="modalPresenteNome"></p>
+
+        <div id="formReserva">
+          <p class="modal-nome-confirmado">
+            Reservando com o nome: <strong id="nomeConfirmado"></strong>
+          </p>
+          <p class="modal-descricao">
+            Clique em confirmar para completar a reserva.
+          </p>
+          <p class="erro-form" id="erroForm" hidden></p>
+          <button class="btn-confirmar" id="btnConfirmarReserva">
+            Confirmar reserva
+          </button>
+          <button class="btn-mudar-nome" id="btnMudarNome">Mudar nome</button>
+        </div>
+
+        <div class="modal-sucesso" id="modalSucesso" hidden>
+          <div class="emoji-sucesso">🎉</div>
+          <p class="sucesso-titulo">Presente reservado!</p>
+          <p class="sucesso-texto" id="sucessoTexto"></p>
+          <button class="btn-confirmar" id="btnFecharSucesso">Fechar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

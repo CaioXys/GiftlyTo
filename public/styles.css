@@ -1,0 +1,510 @@
+:root {
+  --creme: #fff8ec;
+  --coral: #ff6b5b;
+  --coral-escuro: #e5523f;
+  --petroleo: #1b5e63;
+  --petroleo-claro: #2d7a80;
+  --girassol: #ffc857;
+  --rosa: #ff8fa3;
+  --branco: #ffffff;
+  --texto: #2a2a2a;
+  --texto-suave: #6b6b6b;
+  --sombra: 0 8px 24px rgba(27, 94, 99, 0.12);
+  --raio: 20px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: var(--creme);
+  color: var(--texto);
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+.contagem-numero,
+.filtro-btn,
+.btn-confirmar {
+  font-family: "Baloo 2", sans-serif;
+}
+
+/* ---------- Confete de fundo ---------- */
+.confete-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(circle at 10% 20%, var(--rosa) 0 6px, transparent 7px),
+    radial-gradient(circle at 80% 10%, var(--girassol) 0 5px, transparent 6px),
+    radial-gradient(circle at 60% 35%, var(--coral) 0 4px, transparent 5px),
+    radial-gradient(
+      circle at 30% 70%,
+      var(--petroleo-claro) 0 5px,
+      transparent 6px
+    ),
+    radial-gradient(circle at 90% 80%, var(--rosa) 0 4px, transparent 5px),
+    radial-gradient(circle at 15% 90%, var(--girassol) 0 6px, transparent 7px);
+  opacity: 0.35;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  background: linear-gradient(
+    160deg,
+    var(--petroleo) 0%,
+    var(--petroleo-claro) 100%
+  );
+  color: var(--creme);
+  padding: 64px 24px 56px;
+  text-align: center;
+  border-radius: 0 0 40px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::after {
+  content: "";
+  position: absolute;
+  bottom: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140%;
+  height: 80px;
+  background: var(--creme);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+.hero-conteudo {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  margin-bottom: 20px;
+}
+
+.hero-titulo {
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+
+.hero-mensagem {
+  font-size: 1.05rem;
+  opacity: 0.9;
+  max-width: 480px;
+  margin: 0 auto 32px;
+  line-height: 1.5;
+}
+
+.contagem {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.contagem-item {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 14px 18px;
+  min-width: 76px;
+}
+
+.contagem-numero {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--girassol);
+}
+
+.contagem-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+/* ---------- Conteúdo / Filtros ---------- */
+.conteudo {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 24px 60px;
+  position: relative;
+  z-index: 2;
+}
+
+.filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 36px;
+}
+
+.filtro-btn {
+  background: var(--branco);
+  border: 2px solid transparent;
+  color: var(--petroleo);
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--sombra);
+}
+
+.filtro-btn:hover {
+  transform: translateY(-2px);
+}
+
+.filtro-btn.ativo {
+  background: var(--coral);
+  color: var(--branco);
+}
+
+/* ---------- Grid de presentes ---------- */
+.grid-presentes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.card-presente {
+  background: var(--branco);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.card-presente:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 32px rgba(27, 94, 99, 0.18);
+}
+
+/* Fitinha de embrulho no topo do card */
+.card-fita {
+  height: 10px;
+  width: 100%;
+}
+.card-fita.cat-casa {
+  background: var(--coral);
+}
+.card-fita.cat-experiencia {
+  background: var(--petroleo-claro);
+}
+.card-fita.cat-hobby {
+  background: var(--girassol);
+}
+.card-fita.cat-pix {
+  background: var(--rosa);
+}
+.card-fita.cat-outro {
+  background: var(--coral);
+}
+
+.card-corpo {
+  padding: 20px 20px 22px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.card-categoria {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  color: var(--coral-escuro);
+  margin-bottom: 8px;
+}
+
+.card-nome {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--petroleo);
+}
+
+.card-descricao {
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+  line-height: 1.5;
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.card-preco {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto);
+  margin-bottom: 14px;
+}
+
+.btn-reservar {
+  background: var(--coral);
+  color: var(--branco);
+  border: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: "Baloo 2", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-reservar:hover {
+  background: var(--coral-escuro);
+}
+
+.card-presente.reservado .btn-reservar,
+.card-presente.reservado {
+  opacity: 0.85;
+}
+
+.tag-reservado {
+  position: absolute;
+  top: 18px;
+  right: -34px;
+  background: var(--petroleo);
+  color: var(--creme);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 40px;
+  transform: rotate(40deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-reservado-disabled {
+  background: #d8d8d8 !important;
+  color: #888 !important;
+  cursor: not-allowed;
+}
+
+.estado-vazio {
+  text-align: center;
+  color: var(--texto-suave);
+  padding: 40px 0;
+  font-size: 1rem;
+}
+
+/* ---------- Rodapé ---------- */
+.rodape {
+  text-align: center;
+  padding: 24px;
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+}
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(27, 94, 99, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.modal {
+  background: var(--branco);
+  border-radius: var(--raio);
+  padding: 32px;
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.modal-fechar {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--texto-suave);
+  cursor: pointer;
+}
+
+.modal-fechar:hover {
+  color: var(--texto);
+}
+
+.modal-titulo {
+  font-size: 1.4rem;
+  color: var(--petroleo);
+  margin-bottom: 4px;
+}
+
+.modal-presente-nome {
+  font-weight: 600;
+  color: var(--coral-escuro);
+  margin-bottom: 20px;
+}
+
+#formBoasVindas input,
+#formReserva input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 2px solid #ede7da;
+  font-size: 1rem;
+  font-family: inherit;
+  margin-bottom: 14px;
+  box-sizing: border-box;
+  background: var(--branco);
+  color: var(--texto);
+}
+
+#formBoasVindas input:focus,
+#formReserva input:focus {
+  outline: none;
+  border-color: var(--coral);
+}
+
+.modal-descricao {
+  color: var(--texto-suave);
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+}
+
+.modal-nome-confirmado {
+  background: #f0f8fa;
+  border-left: 4px solid var(--petroleo);
+  padding: 12px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.9rem;
+  color: var(--texto);
+}
+
+.modal-nome-confirmado strong {
+  color: var(--petroleo);
+  font-weight: 600;
+}
+
+.btn-mudar-nome {
+  width: 100%;
+  background: var(--girassol);
+  color: var(--texto);
+  border: none;
+  padding: 11px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 8px;
+}
+
+.btn-mudar-nome:hover {
+  background: #ffb92d;
+}
+
+.erro-form {
+  color: var(--coral-escuro);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.btn-confirmar {
+  width: 100%;
+  background: var(--petroleo);
+  color: var(--creme);
+  border: none;
+  padding: 13px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-confirmar:hover {
+  background: var(--petroleo-claro);
+}
+
+.modal-sucesso {
+  text-align: center;
+}
+
+.emoji-sucesso {
+  font-size: 2.6rem;
+  margin-bottom: 8px;
+}
+
+.sucesso-titulo {
+  font-family: "Baloo 2", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--petroleo);
+  margin-bottom: 6px;
+}
+
+.sucesso-texto {
+  color: var(--texto-suave);
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+/* ---------- Acessibilidade: foco visível ---------- */
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--girassol);
+  outline-offset: 2px;
+}
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 480px) {
+  .hero {
+    padding: 48px 18px 64px;
+  }
+  .contagem {
+    gap: 10px;
+  }
+  .contagem-item {
+    min-width: 64px;
+    padding: 10px 12px;
+  }
+  .grid-presentes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Movimento reduzido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .card-presente,
+  .filtro-btn {
+    transition: none;
+  }
+}
