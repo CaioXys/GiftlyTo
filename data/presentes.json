@@ -14,9 +14,9 @@
       "imagem": "",
       "linkLoja": "",
       "preco": "",
-      "reservado": true,
-      "reservadoPor": "Caio",
-      "dataReserva": "2026-06-23T00:23:55.203Z"
+      "reservado": false,
+      "reservadoPor": "",
+      "dataReserva": ""
     },
     {
       "id": "002",
