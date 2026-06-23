@@ -6,6 +6,7 @@
   --petroleo-claro: #2d7a80;
   --girassol: #ffc857;
   --rosa: #ff8fa3;
+  --verde-pix: #32BCAD;
   --branco: #ffffff;
   --texto: #2a2a2a;
   --texto-suave: #6b6b6b;
@@ -48,7 +49,6 @@ h2,
   color: var(--creme);
   padding: 64px 24px 56px;
   text-align: center;
-  border-radius: 0 0 40px 40px;
   position: relative;
   overflow: hidden;
 }
@@ -223,7 +223,7 @@ h2,
   background: var(--girassol);
 }
 .card-fita.cat-pix {
-  background: var(--rosa);
+  background: var(--verde-pix);
 }
 .card-fita.cat-outro {
   background: var(--coral);

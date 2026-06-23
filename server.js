@@ -53,7 +53,6 @@ app.post('/api/presentes/:id/reservar', (req, res) => {
     }
 
     presente.reservado = true;
-    presente.reservadoPor = nome.trim();
     presente.dataReserva = new Date().toISOString();
 
     salvarDados(dados);
