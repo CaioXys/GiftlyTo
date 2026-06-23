@@ -60,7 +60,7 @@ function iniciarContagem(dataFestaStr) {
 
     if (diff <= 0) {
       document.getElementById("contagem").innerHTML =
-        '<p style="font-weight:600;">🎉 A festa é hoje (ou já passou)! 🎉</p>';
+        '<p style="font-weight:600;">🎉 A FESTA CHEGOU! 🎉</p>';
       clearInterval(intervalo);
       return;
     }
@@ -68,14 +68,16 @@ function iniciarContagem(dataFestaStr) {
     const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
     const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
     const minutos = Math.floor((diff / (1000 * 60)) % 60);
+    const segundos = Math.floor((diff / 1000) % 60);
 
     document.getElementById("dias").textContent = dias;
     document.getElementById("horas").textContent = horas;
     document.getElementById("minutos").textContent = minutos;
+    document.getElementById("segundos").textContent = segundos;
   }
 
   atualizar();
-  const intervalo = setInterval(atualizar, 1000 * 30);
+  const intervalo = setInterval(atualizar, 1000);
 }
 
 // ---------- Filtros ----------
@@ -233,6 +235,7 @@ function configurarModalReserva() {
   });
 
   btnMudarNome.addEventListener("click", () => {
+    fecharModalReserva();
     abrirModalBoasVindas();
   });
 
