@@ -52,7 +52,7 @@ No topo do mesmo arquivo `presentes.json`, tem o bloco `"festa"`:
 
 ```json
 "festa": {
-  "nomeAniversariante": "Vô José",
+  "nomeAniversariante": "Gilson",
   "idade": 70,
   "dataFesta": "2026-09-12",
   "mensagem": "Sua mensagem aqui"

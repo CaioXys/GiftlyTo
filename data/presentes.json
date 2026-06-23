@@ -1,6 +1,6 @@
 {
   "festa": {
-    "nomeAniversariante": "Vô José",
+    "nomeAniversariante": "Gilson",
     "idade": 70,
     "dataFesta": "2026-09-12",
     "mensagem": "Junte-se a nós para celebrar 70 anos de histórias, risadas e muito amor!"
@@ -14,9 +14,9 @@
       "imagem": "",
       "linkLoja": "",
       "preco": "",
-      "reservado": true,
-      "reservadoPor": "João Silva",
-      "dataReserva": "2026-06-22T23:27:58.768Z"
+      "reservado": false,
+      "reservadoPor": "",
+      "dataReserva": ""
     },
     {
       "id": "002",
@@ -26,9 +26,9 @@
       "imagem": "",
       "linkLoja": "",
       "preco": "",
-      "reservado": true,
-      "reservadoPor": "Carlos Mendes",
-      "dataReserva": "2026-06-22T23:29:12.995Z"
+      "reservado": false,
+      "reservadoPor": "",
+      "dataReserva": ""
     },
     {
       "id": "003",
