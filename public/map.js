@@ -1,8 +1,8 @@
 // Coordenadas do local da festa — troque pelas coordenadas reais quando souber
 const LOCAL_FESTA = {
-  lat: -23.4173256413608,
-  lng: -46.32640567778244,
-  nome: "Rod. Alberto Hinoto, 2290 - Vila Pedroso, Arujá - SP, 07434-325",
+  lat: -23.5009016394939,
+  lng: -46.18040001475659,
+  nome: "Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP, 08775-420",
 };
 
 let chaveApiCache = null;
