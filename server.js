@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
@@ -107,6 +108,10 @@ app.post('/api/admin/login', (req, res) => {
 app.get('/api/admin/presentes', checarSenhaAdmin, (req, res) => {
   const dados = lerDados();
   res.json(dados);
+});
+
+app.get('/api/config', (req, res) => {
+  res.json({ mapApiKey: process.env.MAP_APIKEY });
 });
 
 app.listen(PORT, () => {

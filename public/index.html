@@ -57,7 +57,20 @@
     </main>
 
     <footer class="rodape">
-      <p>Feito com 💛 para celebrar essa data tão especial.</p>
+      <section class="localizacao">
+  <h2 class="localizacao-titulo">📍 Onde vai ser a festa</h2>
+  <p class="localizacao-endereco">Av. Paulista, 1578 - Bela Vista, São Paulo - SP</p>
+
+  <div class="mapa-container" id="mapaContainer">
+    <img class="mapa-capa" id="mapaCapa" alt="Mapa do local da festa" />
+    <button class="mapa-botao-ver" id="btnVerMapa">
+      <span class="mapa-botao-icone">📍</span>
+        Ver mapa interativo
+      </button>
+      <div id="mapaFesta" class="mapa-real" hidden></div>
+      </div>
+      </section>
+      <p><br>Feito com 💛 para celebrar essa data tão especial.</br></p>
     </footer>
 
     <!-- Modal de boas-vindas (pedir nome uma única vez) -->
@@ -124,5 +137,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="map.js"></script>
   </body>
 </html>

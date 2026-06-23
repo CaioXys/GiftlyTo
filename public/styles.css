@@ -319,10 +319,98 @@ h2,
 
 /* ---------- Rodapé ---------- */
 .rodape {
+  margin-top: 18px;
+  background-color: var(--petroleo);
   text-align: center;
+  height: auto;
   padding: 24px;
-  color: var(--texto-suave);
+  color: var(--branco);
   font-size: 0.85rem;
+}
+
+.localizacao {
+  max-width: 1080px;
+  margin: 0 auto 40px;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.localizacao-titulo {
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+}
+
+.localizacao-endereco {
+  margin-bottom: 18px;
+}
+
+.mapa-container {
+  width: 100%;
+  height: 360px;
+  border-radius: var(--raio);
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.438);
+  overflow: hidden;
+  position: relative;
+  background: #e8e2d3;
+}
+
+.mapa-capa {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(6px);
+  transform: scale(1.05);
+  position: relative;
+  z-index: 1;
+}
+
+.mapa-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--mapa-bg-url);
+  background-size: cover;
+  background-position: center;
+  filter: blur(20px) brightness(0.9);
+  z-index: 0;
+  overflow: hidden;
+}
+
+.mapa-real {
+  width: 100%;
+  height: 360px;
+  border-radius: var(--raio);
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.438);
+  overflow: hidden;
+}
+
+.mapa-botao-ver {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--branco);
+  color: var(--petroleo);
+  border: none;
+  padding: 14px 24px;
+  border-radius: 999px;
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s ease;
+}
+
+.mapa-botao-ver:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.mapa-botao-icone {
+  font-size: 1.2rem;
 }
 
 /* ---------- Modal ---------- */
