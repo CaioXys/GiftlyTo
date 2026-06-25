@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
-const DATA_PATH = path.join(__dirname, 'data', 'presentes.json');
+const DATA_PATH = path.join(__dirname, '..', 'data', 'presentes.json');
 const ADMIN_PASSWORD = 'vovo70anos'; // <-- troque essa senha como quiser
 
 app.use(express.json());
