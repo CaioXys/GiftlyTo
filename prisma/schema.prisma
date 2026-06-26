@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Party {
+  id          Int      @id @default(autoincrement())
+  honoreeName String   @map("honoree_name")
+  age         Int
+  partyDate   DateTime @map("party_date") @db.Date
+  message     String?
+  gifts       Gift[]
+
+  @@map("party")
+}
+
+model Gift {
+  id             Int            @id @default(autoincrement())
+  party          Party          @relation(fields: [partyId], references: [id])
+  partyId        Int            @map("party_id")
+  name           String
+  description    String?
+  category       String
+  image          String         @default("")
+  storeLink      String         @default("") @map("store_link")
+  suggestedValue Decimal?       @map("suggested_value") @db.Decimal(10, 2)
+  contributions  Contribution[]
+
+  @@map("gifts")
+}
+
+model Contribution {
+  id              Int      @id @default(autoincrement())
+  gift            Gift     @relation(fields: [giftId], references: [id])
+  giftId          Int      @map("gift_id")
+  contributorName String   @map("contributor_name")
+  amount          Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("contributions")
+}
