@@ -451,6 +451,23 @@ h2,
   color: var(--texto);
 }
 
+.modal-valor-presente {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--petroleo);
+  margin-bottom: 12px;
+}
+
+.modal-aviso-repeticao {
+  background: #fff4e0;
+  border-left: 4px solid var(--girassol);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--texto);
+  margin-bottom: 16px;
+}
+
 .modal-titulo {
   font-size: 1.4rem;
   color: var(--petroleo);
