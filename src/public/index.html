@@ -73,29 +73,51 @@
       <p>Feito com 💛 para celebrar essa data tão especial.</p>
     </footer>
 
-    <!-- Modal de boas-vindas (pedir nome uma única vez) -->
-    <div class="modal-overlay" id="modalBoasVindas" hidden>
-      <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modalBoasVindasTitulo"
-      >
-        <h2 class="modal-titulo" id="modalBoasVindasTitulo">Bem-vindo! 🎁</h2>
-        <p class="modal-descricao">
-          Qual é o seu nome? Usaremos para registrar sua reserva.
-        </p>
+    <!-- Modal de contribuição -->
+    <div class="modal-overlay" id="modalReserva" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+        <button class="modal-fechar" id="modalFechar" aria-label="Fechar">×</button>
+        <h2 class="modal-titulo" id="modalTitulo">Deixe seu carinho 🎁</h2>
+        <p class="modal-presente-nome" id="modalPresenteNome"></p>
+        <p class="modal-valor-presente" id="modalValorPresente"></p>
 
-        <form id="formBoasVindas">
-          <input
-            type="text"
-            id="inputNomeBoasVindas"
-            placeholder="Como podemos te chamar?"
-            required
-            autocomplete="off"
-          />
-          <button type="submit" class="btn-confirmar">Começar</button>
-        </form>
+        <!-- Etapa 1: nomes + mensagem -->
+        <div id="formReserva">
+          <label class="modal-label">Quem está mandando?</label>
+          <div id="listaNomes">
+            <input type="text" class="input-nome" placeholder="Seu nome" />
+          </div>
+          <button type="button" class="btn-adicionar-nome" id="btnAdicionarNome">
+            + Adicionar outra pessoa
+          </button>
+
+          <label class="modal-label" for="inputMensagem">Mensagem (opcional)</label>
+          <textarea
+            id="inputMensagem"
+            class="input-mensagem"
+            placeholder="Deixe um recadinho..."
+            rows="3"
+          ></textarea>
+
+          <p class="erro-form" id="erroForm" hidden></p>
+          <button class="btn-confirmar" id="btnConfirmarReserva">
+            Confirmar e ver Pix
+          </button>
+        </div>
+
+        <!-- Etapa 2: QR code + link liberados -->
+        <div class="modal-sucesso" id="modalSucesso" hidden>
+          <div class="emoji-sucesso">🎉</div>
+          <p class="sucesso-titulo">Combinado!</p>
+          <p class="sucesso-texto" id="sucessoTexto"></p>
+
+          <div class="qrcode-container" id="qrcodeContainer"></div>
+
+          <a class="btn-confirmar btn-abrir-pix" id="linkAbrirPix" target="_blank" rel="noopener">
+            Abrir Pix
+          </a>
+          <button class="btn-confirmar" id="btnFecharSucesso">Fechar</button>
+        </div>
       </div>
     </div>
 
@@ -140,6 +162,7 @@
       </div>
     </div>
 
+    <script src="qrcode.js"></script>
     <script src="app.js"></script>
     <script src="map.js"></script>
   </body>

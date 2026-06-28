@@ -7,6 +7,7 @@
   --girassol: #ffc857;
   --rosa: #ff8fa3;
   --verde-pix: #32BCAD;
+  --azul-claro: #06dbeb;
   --branco: #ffffff;
   --texto: #2a2a2a;
   --texto-suave: #6b6b6b;
@@ -221,6 +222,9 @@ h2,
 }
 .card-fita.cat-hobby {
   background: var(--girassol);
+}
+.card-fita.cat-viagem{
+  background: var(--azul-claro);
 }
 .card-fita.cat-pix {
   background: var(--verde-pix);
@@ -458,16 +462,6 @@ h2,
   margin-bottom: 12px;
 }
 
-.modal-aviso-repeticao {
-  background: #fff4e0;
-  border-left: 4px solid var(--girassol);
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  color: var(--texto);
-  margin-bottom: 16px;
-}
-
 .modal-titulo {
   font-size: 1.4rem;
   color: var(--petroleo);
@@ -504,39 +498,6 @@ h2,
   color: var(--texto-suave);
   margin-bottom: 16px;
   font-size: 0.9rem;
-}
-
-.modal-nome-confirmado {
-  background: #f0f8fa;
-  border-left: 4px solid var(--petroleo);
-  padding: 12px 14px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-size: 0.9rem;
-  color: var(--texto);
-}
-
-.modal-nome-confirmado strong {
-  color: var(--petroleo);
-  font-weight: 600;
-}
-
-.btn-mudar-nome {
-  width: 100%;
-  background: var(--girassol);
-  color: var(--texto);
-  border: none;
-  padding: 11px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-  margin-top: 8px;
-}
-
-.btn-mudar-nome:hover {
-  background: #ffb92d;
 }
 
 .erro-form {
@@ -590,6 +551,117 @@ button:focus-visible,
 input:focus-visible {
   outline: 3px solid var(--girassol);
   outline-offset: 2px;
+}
+
+/* ---------- Campo dinâmico de nomes ---------- */
+.modal-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--texto);
+  margin-bottom: 6px;
+}
+
+#listaNomes .input-nome {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid #ede7da;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+#listaNomes .input-nome:focus {
+  outline: none;
+  border-color: var(--coral);
+}
+
+.linha-nome-extra {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.linha-nome-extra .input-nome {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.btn-remover-nome {
+  background: #f4f0e6;
+  border: none;
+  color: var(--coral-escuro);
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 8px;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-remover-nome:hover {
+  background: #ecdfd5;
+}
+
+.btn-adicionar-nome {
+  background: none;
+  border: 2px dashed #d8cfc0;
+  color: var(--petroleo);
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 18px;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-adicionar-nome:hover {
+  background: #faf6ec;
+  border-color: var(--coral);
+}
+
+/* ---------- Mensagem opcional ---------- */
+.input-mensagem {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid #ede7da;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 16px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.input-mensagem:focus {
+  outline: none;
+  border-color: var(--coral);
+}
+
+/* ---------- QR code e link do Pix ---------- */
+.qrcode-container {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.qrcode-container svg {
+  max-width: 220px;
+  height: auto;
+}
+
+.btn-abrir-pix {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  margin-bottom: 10px;
 }
 
 /* ---------- Responsivo ---------- */

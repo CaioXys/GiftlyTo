@@ -34,18 +34,20 @@ model Gift {
   image          String         @default("")
   storeLink      String         @default("") @map("store_link")
   suggestedValue Decimal?       @map("suggested_value") @db.Decimal(10, 2)
+  pixLink        String         @default("") @map("pix_link")
   contributions  Contribution[]
 
   @@map("gifts")
 }
 
 model Contribution {
-  id              Int      @id @default(autoincrement())
-  gift            Gift     @relation(fields: [giftId], references: [id])
-  giftId          Int      @map("gift_id")
-  contributorName String   @map("contributor_name")
-  amount          Decimal  @db.Decimal(10, 2)
-  createdAt       DateTime @default(now()) @map("created_at")
+  id        Int      @id @default(autoincrement())
+  gift      Gift     @relation(fields: [giftId], references: [id])
+  giftId    Int      @map("gift_id")
+  names     String[] @map("names")
+  message   String?  @map("message")
+  status    String   @default("pendente")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("contributions")
 }
