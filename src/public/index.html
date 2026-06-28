@@ -58,25 +58,35 @@
 
     <footer class="rodape">
       <section class="localizacao">
-  <h2 class="localizacao-titulo">📍 Onde vai ser a festa</h2>
-  <p class="localizacao-endereco">Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP, 08775-420</p>
+        <h2 class="localizacao-titulo">📍 Onde vai ser a festa</h2>
+        <p class="localizacao-endereco">
+          Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP,
+          08775-420
+        </p>
 
-  <div class="mapa-container" id="mapaContainer">
-    <img class="mapa-capa" id="mapaCapa" alt="Mapa do local da festa" />
-    <button class="mapa-botao-ver" id="btnVerMapa">
-      <span class="mapa-botao-icone">📍</span>
-        Ver mapa interativo
-      </button>
-      <div id="mapaFesta" class="mapa-real" hidden></div>
-      </div>
+        <div class="mapa-container" id="mapaContainer">
+          <img class="mapa-capa" id="mapaCapa" alt="Mapa do local da festa" />
+          <button class="mapa-botao-ver" id="btnVerMapa">
+            <span class="mapa-botao-icone">📍</span>
+            Ver mapa interativo
+          </button>
+          <div id="mapaFesta" class="mapa-real" hidden></div>
+        </div>
       </section>
       <p>Feito com 💛 para celebrar essa data tão especial.</p>
     </footer>
 
     <!-- Modal de contribuição -->
     <div class="modal-overlay" id="modalReserva" hidden>
-      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
-        <button class="modal-fechar" id="modalFechar" aria-label="Fechar">×</button>
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalTitulo"
+      >
+        <button class="modal-fechar" id="modalFechar" aria-label="Fechar">
+          ×
+        </button>
         <h2 class="modal-titulo" id="modalTitulo">Deixe seu carinho 🎁</h2>
         <p class="modal-presente-nome" id="modalPresenteNome"></p>
         <p class="modal-valor-presente" id="modalValorPresente"></p>
@@ -87,11 +97,17 @@
           <div id="listaNomes">
             <input type="text" class="input-nome" placeholder="Seu nome" />
           </div>
-          <button type="button" class="btn-adicionar-nome" id="btnAdicionarNome">
+          <button
+            type="button"
+            class="btn-adicionar-nome"
+            id="btnAdicionarNome"
+          >
             + Adicionar outra pessoa
           </button>
 
-          <label class="modal-label" for="inputMensagem">Mensagem (opcional)</label>
+          <label class="modal-label" for="inputMensagem"
+            >Mensagem (opcional)</label
+          >
           <textarea
             id="inputMensagem"
             class="input-mensagem"
@@ -113,50 +129,14 @@
 
           <div class="qrcode-container" id="qrcodeContainer"></div>
 
-          <a class="btn-confirmar btn-abrir-pix" id="linkAbrirPix" target="_blank" rel="noopener">
+          <a
+            class="btn-confirmar btn-abrir-pix"
+            id="linkAbrirPix"
+            target="_blank"
+            rel="noopener"
+          >
             Abrir Pix
           </a>
-          <button class="btn-confirmar" id="btnFecharSucesso">Fechar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de reserva -->
-    <div class="modal-overlay" id="modalReserva" hidden>
-      <div
-        class="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modalTitulo"
-      >
-        <button class="modal-fechar" id="modalFechar" aria-label="Fechar">
-          ×
-        </button>
-        <h2 class="modal-titulo" id="modalTitulo">Reservar presente</h2>
-        <p class="modal-presente-nome" id="modalPresenteNome"></p>
-        <p class="modal-valor-presente" id="modalValorPresente"></p>
-        <p class="modal-aviso-repeticao" id="modalAvisoRepeticao" hidden></p>
-
-<div id="formReserva">
-
-        <div id="formReserva">
-          <p class="modal-nome-confirmado">
-            Reservando com o nome: <strong id="nomeConfirmado"></strong>
-          </p>
-          <p class="modal-descricao">
-            Clique em confirmar para completar a reserva.
-          </p>
-          <p class="erro-form" id="erroForm" hidden></p>
-          <button class="btn-confirmar" id="btnConfirmarReserva">
-            Confirmar reserva
-          </button>
-          <button class="btn-mudar-nome" id="btnMudarNome">Mudar nome</button>
-        </div>
-
-        <div class="modal-sucesso" id="modalSucesso" hidden>
-          <div class="emoji-sucesso">🎉</div>
-          <p class="sucesso-titulo">Presente reservado!</p>
-          <p class="sucesso-texto" id="sucessoTexto"></p>
           <button class="btn-confirmar" id="btnFecharSucesso">Fechar</button>
         </div>
       </div>

@@ -83,15 +83,14 @@ app.get('/api/presentes', async (req, res) => {
 // Registrar uma nova contribuição (Pix) — não bloqueia o presente, pode repetir
 app.post('/api/presentes/:id/contribuir', async (req, res) => {
   const { id } = req.params;
-  const { nome, valor } = req.body;
+  const { nomes, mensagem } = req.body;
 
-  if (!nome || !nome.trim()) {
-    return res.status(400).json({ erro: 'Informe seu nome para contribuir.' });
-  }
+  const listaNomes = Array.isArray(nomes)
+    ? nomes.map((n) => String(n).trim()).filter((n) => n.length > 0)
+    : [];
 
-  const valorNumerico = Number(valor);
-  if (!valor || Number.isNaN(valorNumerico) || valorNumerico <= 0) {
-    return res.status(400).json({ erro: 'Informe um valor de contribuição válido.' });
+  if (listaNomes.length === 0) {
+    return res.status(400).json({ erro: 'Informe ao menos um nome.' });
   }
 
   try {
@@ -101,31 +100,24 @@ app.post('/api/presentes/:id/contribuir', async (req, res) => {
       return res.status(404).json({ erro: 'Presente não encontrado.' });
     }
 
-    const contribuicao = await prisma.contribution.create({
+    await prisma.contribution.create({
       data: {
         giftId: Number(id),
-        contributorName: nome.trim(),
-        amount: valorNumerico,
+        names: listaNomes,
+        message: mensagem ? String(mensagem).trim() : null,
+        status: 'pendente',
       },
-    });
-
-    const giftAtualizado = await prisma.gift.findUnique({
-      where: { id: Number(id) },
-      include: { contributions: true },
     });
 
     res.json({
       sucesso: true,
-      contribuicao: {
-        id: contribuicao.id,
-        valor: Number(contribuicao.amount),
-        data: contribuicao.createdAt.toISOString(),
-      },
-      presente: formatarPresente(giftAtualizado, nome.trim()),
+      pixLink: gift.pixLink || '',
+      valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
+      nomePresente: gift.name,
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ erro: 'Não foi possível registrar a contribuição.' });
+    res.status(500).json({ erro: 'Não foi possível registrar sua mensagem.' });
   }
 });
 
