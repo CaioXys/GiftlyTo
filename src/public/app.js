@@ -161,8 +161,6 @@ function configurarListaNomes() {
   // Reseta para 1 campo só, toda vez que o modal abre
   lista.innerHTML = `
     <input type="text" class="input-nome" placeholder="Seu nome" />
-    <label class="modal-label" for="inputEmail">Seu e-mail</label>
-    <input type="email" id="inputEmail" class="input-email" placeholder="Seu e-mail" required />
   `;
 
   btnAdicionar.onclick = () => {
@@ -231,14 +229,6 @@ function configurarModalContribuicao() {
       return;
     }
 
-    const email = document.getElementById("inputEmail").value.trim();
-    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    if (!emailValido) {
-      erro.textContent = "Informe um e-mail válido para gerar o Pix.";
-      erro.hidden = false;
-      return;
-    }
-
     const mensagem = document.getElementById("inputMensagem").value.trim();
 
     btnConfirmar.disabled = true;
@@ -250,7 +240,7 @@ function configurarModalContribuicao() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nomes, mensagem, email }),
+          body: JSON.stringify({ nomes, mensagem }),
         },
       );
 
@@ -291,11 +281,6 @@ function abrirModalContribuicao(presente) {
 
   document.getElementById("inputMensagem").value = "";
   configurarListaNomes();
-
-  const inputEmail = document.getElementById("inputEmail");
-  if (inputEmail) {
-    inputEmail.value = "";
-  }
 
   document.getElementById("formReserva").hidden = false;
   document.getElementById("modalSucesso").hidden = true;

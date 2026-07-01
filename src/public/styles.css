@@ -554,14 +554,6 @@ input:focus-visible {
 }
 
 /* ---------- Campo dinâmico de nomes ---------- */
-.modal-label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--texto);
-  margin-bottom: 6px;
-}
-
 #listaNomes .input-nome {
   width: 100%;
   padding: 12px 14px;
@@ -574,22 +566,6 @@ input:focus-visible {
 }
 
 #listaNomes .input-nome:focus {
-  outline: none;
-  border-color: var(--coral);
-}
-
-.input-email {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 2px solid #ede7da;
-  font-size: 0.95rem;
-  font-family: inherit;
-  margin-bottom: 10px;
-  box-sizing: border-box;
-}
-
-.input-email:focus {
   outline: none;
   border-color: var(--coral);
 }

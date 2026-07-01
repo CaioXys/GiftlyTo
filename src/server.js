@@ -14,6 +14,11 @@ const mpAccessToken =
   mpMode === "test"
     ? process.env.MP_TEST_ACCESS_TOKEN || ""
     : process.env.MP_ACCESS_TOKEN || "";
+const mpPayerId = String(
+  process.env.MP_PAYER_ID ||
+    process.env.MP_PAYER_EMAIL ||
+    "convidado@mygift.com",
+).trim();
 
 if (mpMode === "test" && !process.env.MP_TEST_ACCESS_TOKEN) {
   console.warn(
@@ -36,15 +41,21 @@ app.use(express.static(path.join(__dirname, "public")));
 function formatarPresente(gift, nomeAtual) {
   const contributions = gift.contributions || [];
 
+  const valorPresente = gift.suggestedValue ? Number(gift.suggestedValue) : 0;
+  const contribuicoesPagas = contributions.filter((c) => c.status === "pago");
   const totalArrecadado = contributions.reduce(
-    (soma, c) => soma + Number(c.amount),
+    (soma, c) => (c.status === "pago" ? soma + valorPresente : soma),
     0,
   );
 
   // Filtra só as contribuições da pessoa que está vendo a página agora
   const minhasContribuicoes = nomeAtual
     ? contributions.filter(
-        (c) => c.contributorName.toLowerCase() === nomeAtual.toLowerCase(),
+        (c) =>
+          Array.isArray(c.names) &&
+          c.names.some(
+            (nome) => nome.toLowerCase() === nomeAtual.toLowerCase(),
+          ),
       )
     : [];
 
@@ -57,12 +68,11 @@ function formatarPresente(gift, nomeAtual) {
     linkLoja: gift.storeLink || "",
     valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
     totalArrecadado,
-    totalContribuicoes: contributions.length,
+    totalContribuicoes: contribuicoesPagas.length,
     minhasContribuicoes: minhasContribuicoes.length,
-    minhasContribuicoesValor: minhasContribuicoes.reduce(
-      (soma, c) => soma + Number(c.amount),
-      0,
-    ),
+    minhasContribuicoesValor:
+      minhasContribuicoes.filter((c) => c.status === "pago").length *
+      valorPresente,
   };
 }
 
@@ -89,6 +99,10 @@ async function buscarDadosCompletos(nomeAtual) {
 function montarErroMercadoPago(err) {
   const detalhes = Array.isArray(err?.cause) ? err.cause : [];
   const mensagemErro = String(err?.message || "");
+  const descricaoDetalhes = detalhes
+    .map((item) => String(item?.description || item?.message || ""))
+    .filter(Boolean)
+    .join(" | ");
 
   const liveCredentialsError =
     err?.status === 401 &&
@@ -103,6 +117,15 @@ function montarErroMercadoPago(err) {
     return {
       status: 400,
       erro: "O Mercado Pago rejeitou a credencial de produção. Para testes locais, use `MP_MODE=test` com `MP_TEST_ACCESS_TOKEN`. Para produção, confirme no painel se a aplicação e o Pix estão habilitados.",
+    };
+  }
+
+  if (mensagemErro || descricaoDetalhes) {
+    return {
+      status: 400,
+      erro: descricaoDetalhes
+        ? `O Mercado Pago rejeitou os dados enviados: ${descricaoDetalhes}`
+        : `O Mercado Pago rejeitou os dados enviados: ${mensagemErro}`,
     };
   }
 
@@ -128,24 +151,13 @@ app.get("/api/presentes", async (req, res) => {
 // Registrar uma nova contribuição e gerar o Pix pelo Mercado Pago
 app.post("/api/presentes/:id/contribuir", async (req, res) => {
   const { id } = req.params;
-  const { nomes, mensagem, email } = req.body;
+  const { nomes, mensagem } = req.body;
 
   const listaNomes = Array.isArray(nomes)
     ? nomes.map((n) => String(n).trim()).filter((n) => n.length > 0)
     : [];
-  const emailLimpo = String(email || "")
-    .trim()
-    .toLowerCase();
-  const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailLimpo);
-
   if (listaNomes.length === 0) {
     return res.status(400).json({ erro: "Informe ao menos um nome." });
-  }
-
-  if (!emailValido) {
-    return res
-      .status(400)
-      .json({ erro: "Informe um e-mail válido para gerar o Pix." });
   }
 
   try {
@@ -174,7 +186,7 @@ app.post("/api/presentes/:id/contribuir", async (req, res) => {
         payment_method_id: "pix",
         external_reference: `gift-${gift.id}-${Date.now()}`,
         payer: {
-          email: emailLimpo,
+          email: mpPayerId,
           first_name: listaNomes[0],
         },
         metadata: {
@@ -193,7 +205,8 @@ app.post("/api/presentes/:id/contribuir", async (req, res) => {
       data: {
         giftId: Number(id),
         names: listaNomes,
-        email: emailLimpo,
+        email: mpPayerId,
+        mpPaymentId: payment.id ? String(payment.id) : null,
         message: mensagem ? String(mensagem).trim() : null,
         status: "pendente",
       },
@@ -230,15 +243,23 @@ app.get("/api/presentes/:id/minhas-contribuicoes", async (req, res) => {
     const contribuicoes = await prisma.contribution.findMany({
       where: {
         giftId: Number(id),
-        contributorName: { equals: nomeAtual, mode: "insensitive" },
       },
       orderBy: { createdAt: "asc" },
+      include: { gift: true },
     });
 
+    const nomeNormalizado = nomeAtual.toLowerCase();
+    const minhasContribuicoes = contribuicoes.filter(
+      (c) =>
+        Array.isArray(c.names) &&
+        c.names.some((nome) => nome.toLowerCase() === nomeNormalizado),
+    );
+
     res.json({
-      contribuicoes: contribuicoes.map((c) => ({
+      contribuicoes: minhasContribuicoes.map((c) => ({
         id: c.id,
-        valor: Number(c.amount),
+        valor: c.gift.suggestedValue ? Number(c.gift.suggestedValue) : 0,
+        status: c.status,
         data: c.createdAt.toISOString(),
       })),
     });
@@ -292,8 +313,11 @@ app.get("/api/admin/contribuicoes", checarSenhaAdmin, async (req, res) => {
       contribuicoes: contribuicoes.map((c) => ({
         id: c.id,
         presente: c.gift.name,
-        nome: c.contributorName,
-        valor: Number(c.amount),
+        nomes: c.names,
+        payerId: c.email,
+        paymentId: c.mpPaymentId,
+        status: c.status,
+        valor: c.gift.suggestedValue ? Number(c.gift.suggestedValue) : 0,
         data: c.createdAt.toISOString(),
       })),
     });

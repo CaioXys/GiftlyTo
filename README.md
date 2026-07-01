@@ -69,7 +69,12 @@ Troque `nomeAniversariante`, `idade`, `dataFesta` (formato AAAA-MM-DD) e a `mens
 
 O fluxo de Pix agora usa o **Mercado Pago** para gerar o QR code no momento da contribuição.
 
-Para isso, você precisa manter no `.env` a variável `MP_ACCESS_TOKEN` com a chave privada da aplicação e informar um e-mail válido no modal do site, porque o Mercado Pago exige esse dado para criar o pagamento.
+Para isso, você precisa manter no `.env`:
+
+- `MP_MODE=test` e `MP_TEST_ACCESS_TOKEN` para ambiente de testes, ou
+- `MP_MODE=live` e `MP_ACCESS_TOKEN` para produção.
+
+O app usa um identificador fixo do pagador (`MP_PAYER_ID`, com compatibilidade para `MP_PAYER_EMAIL` e padrão `convidado@mygift.com`) para preencher o campo obrigatório da API do Mercado Pago. Assim, o convidado não precisa informar nada extra no modal.
 
 Se o token estiver ausente ou inválido, a API vai retornar erro ao tentar gerar o Pix.
 
