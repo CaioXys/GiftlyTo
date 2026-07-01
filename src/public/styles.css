@@ -6,7 +6,7 @@
   --petroleo-claro: #2d7a80;
   --girassol: #ffc857;
   --rosa: #ff8fa3;
-  --verde-pix: #32BCAD;
+  --verde-pix: #32bcad;
   --azul-claro: #06dbeb;
   --branco: #ffffff;
   --texto: #2a2a2a;
@@ -223,7 +223,7 @@ h2,
 .card-fita.cat-hobby {
   background: var(--girassol);
 }
-.card-fita.cat-viagem{
+.card-fita.cat-viagem {
   background: var(--azul-claro);
 }
 .card-fita.cat-pix {
@@ -398,7 +398,7 @@ h2,
   border: none;
   padding: 14px 24px;
   border-radius: 999px;
-  font-family: 'Baloo 2', sans-serif;
+  font-family: "Baloo 2", sans-serif;
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
@@ -578,6 +578,22 @@ input:focus-visible {
   border-color: var(--coral);
 }
 
+.input-email {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid #ede7da;
+  font-size: 0.95rem;
+  font-family: inherit;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.input-email:focus {
+  outline: none;
+  border-color: var(--coral);
+}
+
 .linha-nome-extra {
   display: flex;
   gap: 8px;
@@ -619,7 +635,9 @@ input:focus-visible {
   font-weight: 600;
   cursor: pointer;
   margin-bottom: 18px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .btn-adicionar-nome:hover {
@@ -655,6 +673,12 @@ input:focus-visible {
 .qrcode-container svg {
   max-width: 220px;
   height: auto;
+}
+
+.qrcode-container img {
+  max-width: 220px;
+  height: auto;
+  display: block;
 }
 
 .btn-abrir-pix {

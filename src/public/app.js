@@ -159,7 +159,11 @@ function configurarListaNomes() {
   const btnAdicionar = document.getElementById("btnAdicionarNome");
 
   // Reseta para 1 campo só, toda vez que o modal abre
-  lista.innerHTML = `<input type="text" class="input-nome" placeholder="Seu nome" />`;
+  lista.innerHTML = `
+    <input type="text" class="input-nome" placeholder="Seu nome" />
+    <label class="modal-label" for="inputEmail">Seu e-mail</label>
+    <input type="email" id="inputEmail" class="input-email" placeholder="Seu e-mail" required />
+  `;
 
   btnAdicionar.onclick = () => {
     const linha = document.createElement("div");
@@ -214,7 +218,8 @@ function configurarModalContribuicao() {
     erro.hidden = true;
 
     if (!presenteAtual) {
-      erro.textContent = "Não identificamos o presente. Feche e tente novamente.";
+      erro.textContent =
+        "Não identificamos o presente. Feche e tente novamente.";
       erro.hidden = false;
       return;
     }
@@ -222,6 +227,14 @@ function configurarModalContribuicao() {
     const nomes = obterNomesPreenchidos();
     if (nomes.length === 0) {
       erro.textContent = "Informe ao menos um nome.";
+      erro.hidden = false;
+      return;
+    }
+
+    const email = document.getElementById("inputEmail").value.trim();
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!emailValido) {
+      erro.textContent = "Informe um e-mail válido para gerar o Pix.";
       erro.hidden = false;
       return;
     }
@@ -237,7 +250,7 @@ function configurarModalContribuicao() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nomes, mensagem }),
+          body: JSON.stringify({ nomes, mensagem, email }),
         },
       );
 
@@ -255,7 +268,7 @@ function configurarModalContribuicao() {
       erro.hidden = false;
     } finally {
       btnConfirmar.disabled = false;
-      btnConfirmar.textContent = "Confirmar e ver Pix";
+      btnConfirmar.textContent = "Confirmar e gerar Pix";
     }
   });
 
@@ -268,7 +281,8 @@ function configurarModalContribuicao() {
 function abrirModalContribuicao(presente) {
   presenteAtual = presente;
 
-  document.getElementById("modalPresenteNome").textContent = presente.nome || "";
+  document.getElementById("modalPresenteNome").textContent =
+    presente.nome || "";
 
   const valorTexto = presente.valorSugerido
     ? `Valor deste presente: ${formatarMoeda(presente.valorSugerido)} via Pix`
@@ -277,6 +291,11 @@ function abrirModalContribuicao(presente) {
 
   document.getElementById("inputMensagem").value = "";
   configurarListaNomes();
+
+  const inputEmail = document.getElementById("inputEmail");
+  if (inputEmail) {
+    inputEmail.value = "";
+  }
 
   document.getElementById("formReserva").hidden = false;
   document.getElementById("modalSucesso").hidden = true;
@@ -300,15 +319,21 @@ function mostrarPix(dados) {
   const qrContainer = document.getElementById("qrcodeContainer");
   qrContainer.innerHTML = "";
 
-  if (dados.pixLink) {
-    linkBtn.href = dados.pixLink;
+  if (dados.ticketUrl) {
+    linkBtn.href = dados.ticketUrl;
     linkBtn.hidden = false;
 
-    // Desenha o QR code a partir do link do Pix (biblioteca qrcode-generator)
-    const qr = qrcode(0, "M"); // tipo 0 = automático, M = correção de erro média
-    qr.addData(dados.pixLink);
-    qr.make();
-    qrContainer.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 });
+    if (dados.qrCodeBase64) {
+      const img = document.createElement("img");
+      img.alt = "QR Code do Pix";
+      img.src = `data:image/png;base64,${dados.qrCodeBase64}`;
+      qrContainer.appendChild(img);
+    } else if (dados.qrCode) {
+      const qr = qrcode(0, "M");
+      qr.addData(dados.qrCode);
+      qr.make();
+      qrContainer.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 });
+    }
   } else {
     linkBtn.hidden = true;
   }

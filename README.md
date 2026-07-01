@@ -41,13 +41,15 @@ Cada presente segue este formato:
 ```
 
 **Dicas importantes:**
+
 - `id` precisa ser **único** (não repita o mesmo id em dois presentes). Pode ser "005", "006", etc.
 - `categoria` pode ser: `casa`, `experiencia`, `hobby`, `pix`, ou crie a sua (ela aparecerá automaticamente como um filtro no site e gera uma fitinha colorida no card — categorias novas usam a cor coral por padrão).
 - Não precisa preencher `imagem`, `linkLoja` ou `preco` — pode deixar como `""` (vazio).
 - **Nunca edite manualmente** `reservado`, `reservadoPor` ou `dataReserva` de um presente já reservado — isso é atualizado automaticamente pelo site. Só edite esses campos se quiser "destravar" um presente reservado por engano (mude `reservado` para `false` e `reservadoPor` para `""`).
-- Depois de editar e salvar o arquivo, **reinicie o servidor** (`Ctrl + C` e rode `node server.js` de novo) para garantir que o site carregue as mudanças. *(Obs: como o navegador busca os dados a cada vez que a página recarrega, às vezes nem precisa reiniciar — só atualizar a página no navegador já basta. Reinicie se notar algo estranho.)*
+- Depois de editar e salvar o arquivo, **reinicie o servidor** (`Ctrl + C` e rode `node server.js` de novo) para garantir que o site carregue as mudanças. _(Obs: como o navegador busca os dados a cada vez que a página recarrega, às vezes nem precisa reiniciar — só atualizar a página no navegador já basta. Reinicie se notar algo estranho.)_
 
 ### Editando informações da festa
+
 No topo do mesmo arquivo `presentes.json`, tem o bloco `"festa"`:
 
 ```json
@@ -65,9 +67,13 @@ Troque `nomeAniversariante`, `idade`, `dataFesta` (formato AAAA-MM-DD) e a `mens
 
 ## Sobre o Pix
 
-Por enquanto, o site **não processa pagamento real**. O presente "Contribuição em dinheiro (Pix)" funciona como os outros: a pessoa reserva e diz que vai contribuir, e você combina o envio do Pix por fora (WhatsApp, por exemplo).
+O fluxo de Pix agora usa o **Mercado Pago** para gerar o QR code no momento da contribuição.
 
-Quando quiser ativar pagamento online de verdade (Pix/cartão via algum gateway como Mercado Pago ou Stripe), é só avisar — o código já está organizado para isso ser adicionado sem precisar refazer o site.
+Para isso, você precisa manter no `.env` a variável `MP_ACCESS_TOKEN` com a chave privada da aplicação e informar um e-mail válido no modal do site, porque o Mercado Pago exige esse dado para criar o pagamento.
+
+Se o token estiver ausente ou inválido, a API vai retornar erro ao tentar gerar o Pix.
+
+Se estiver testando localmente e o Mercado Pago acusar credencial live, defina `MP_MODE=test` e preencha `MP_TEST_ACCESS_TOKEN` no `.env`.
 
 ---
 
@@ -83,7 +89,8 @@ A forma mais simples de ver as reservas por agora é abrir o arquivo `data/prese
 ---
 
 ## Próximos passos possíveis
+
 - [ ] Adicionar fotos reais dos presentes (campo `imagem`)
 - [ ] Criar uma tela de admin visual (sem precisar editar JSON)
-- [ ] Integrar pagamento real via Pix/cartão
+- [x] Integrar pagamento real via Pix no Mercado Pago
 - [ ] Publicar o site online (Vercel/Netlify) para acesso de qualquer lugar
