@@ -8,6 +8,7 @@ const NOMES_CATEGORIA = {
   experiencia: "Experiência",
   hobby: "Hobby",
   pix: "Pix",
+  viagem: "Viagem",
   outro: "Outro",
 };
 

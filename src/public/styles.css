@@ -1,9 +1,11 @@
 :root {
   --creme: #fff8ec;
   --coral: #ff6b5b;
+  --azul-escuro: #1101f5;
   --coral-escuro: #e5523f;
   --petroleo: #1b5e63;
   --petroleo-claro: #2d7a80;
+  --verde: #74f320;
   --girassol: #ffc857;
   --rosa: #ff8fa3;
   --verde-pix: #32BCAD;
@@ -218,7 +220,7 @@ h2,
   background: var(--coral);
 }
 .card-fita.cat-experiencia {
-  background: var(--petroleo-claro);
+  background: var(--verde);
 }
 .card-fita.cat-hobby {
   background: var(--girassol);
@@ -230,7 +232,7 @@ h2,
   background: var(--verde-pix);
 }
 .card-fita.cat-outro {
-  background: var(--coral);
+  background: var(--azul-escuro);
 }
 
 .card-corpo {
