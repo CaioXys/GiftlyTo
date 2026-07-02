@@ -45,6 +45,8 @@ model Contribution {
   gift      Gift     @relation(fields: [giftId], references: [id])
   giftId    Int      @map("gift_id")
   names     String[] @map("names")
+  email     String?  @map("email")
+  mpPaymentId String? @map("mp_payment_id")
   message   String?  @map("message")
   status    String   @default("pendente")
   createdAt DateTime @default(now()) @map("created_at")

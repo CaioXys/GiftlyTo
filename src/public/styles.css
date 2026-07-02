@@ -8,7 +8,7 @@
   --verde: #74f320;
   --girassol: #ffc857;
   --rosa: #ff8fa3;
-  --verde-pix: #32BCAD;
+  --verde-pix: #32bcad;
   --azul-claro: #06dbeb;
   --branco: #ffffff;
   --texto: #2a2a2a;
@@ -225,7 +225,7 @@ h2,
 .card-fita.cat-hobby {
   background: var(--girassol);
 }
-.card-fita.cat-viagem{
+.card-fita.cat-viagem {
   background: var(--azul-claro);
 }
 .card-fita.cat-pix {
@@ -400,7 +400,7 @@ h2,
   border: none;
   padding: 14px 24px;
   border-radius: 999px;
-  font-family: 'Baloo 2', sans-serif;
+  font-family: "Baloo 2", sans-serif;
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
@@ -556,14 +556,6 @@ input:focus-visible {
 }
 
 /* ---------- Campo dinâmico de nomes ---------- */
-.modal-label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--texto);
-  margin-bottom: 6px;
-}
-
 #listaNomes .input-nome {
   width: 100%;
   padding: 12px 14px;
@@ -621,7 +613,9 @@ input:focus-visible {
   font-weight: 600;
   cursor: pointer;
   margin-bottom: 18px;
-  transition: background 0.2s ease, border-color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .btn-adicionar-nome:hover {
@@ -657,6 +651,12 @@ input:focus-visible {
 .qrcode-container svg {
   max-width: 220px;
   height: auto;
+}
+
+.qrcode-container img {
+  max-width: 220px;
+  height: auto;
+  display: block;
 }
 
 .btn-abrir-pix {
