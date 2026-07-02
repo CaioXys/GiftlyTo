@@ -3,7 +3,7 @@ const express = require("express");
 const path = require("path");
 const { PrismaClient } = require("@prisma/client");
 const { randomUUID } = require("crypto");
-const { MercadoPagoConfig, Payment } = require("mercadopago");
+const { MercadoPagoConfig, Order } = require("mercadopago");
 
 const prisma = new PrismaClient();
 const app = express();
@@ -14,22 +14,29 @@ const mpAccessToken =
   mpMode === "test"
     ? process.env.MP_TEST_ACCESS_TOKEN || ""
     : process.env.MP_ACCESS_TOKEN || "";
-const mpPayerId = String(
-  process.env.MP_PAYER_ID ||
-    process.env.MP_PAYER_EMAIL ||
-    "convidado@mygift.com",
-).trim();
+
+// Em modo de teste, a API de Orders exige o payer.first_name = "APRO"
+// para simular o Pix em sandbox (retorna status "action_required" e depois
+// muda automaticamente para aprovado). Em produção usamos o nome real.
+const mpPayerRaw = String(process.env.MP_PAYER || "").trim();
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const mpPayerEmail = REGEX_EMAIL.test(mpPayerRaw)
+  ? mpPayerRaw
+  : mpMode === "test"
+    ? "test_user_br@testuser.com"
+    : "convidado@mygift.com";
 
 if (mpMode === "test" && !process.env.MP_TEST_ACCESS_TOKEN) {
   console.warn(
     "MP_MODE=test está ativo, mas MP_TEST_ACCESS_TOKEN não foi definido.",
   );
 }
+
 const mercadoPagoClient = mpAccessToken
   ? new MercadoPagoConfig({ accessToken: mpAccessToken })
   : null;
-const mercadoPagoPayment = mercadoPagoClient
-  ? new Payment(mercadoPagoClient)
+const mercadoPagoOrder = mercadoPagoClient
+  ? new Order(mercadoPagoClient)
   : null;
 
 app.use(express.json());
@@ -148,7 +155,7 @@ app.get("/api/presentes", async (req, res) => {
   }
 });
 
-// Registrar uma nova contribuição e gerar o Pix pelo Mercado Pago
+// Registrar uma nova contribuição e gerar o Pix pelo Mercado Pago (API de Orders)
 app.post("/api/presentes/:id/contribuir", async (req, res) => {
   const { id } = req.params;
   const { nomes, mensagem } = req.body;
@@ -173,54 +180,64 @@ app.post("/api/presentes/:id/contribuir", async (req, res) => {
       });
     }
 
-    if (!mercadoPagoPayment) {
+    if (!mercadoPagoOrder) {
       return res
         .status(500)
         .json({ erro: "O Mercado Pago não está configurado no servidor." });
     }
 
-    const payment = await mercadoPagoPayment.create({
+    const valor = Number(gift.suggestedValue).toFixed(2);
+
+    const order = await mercadoPagoOrder.create({
       body: {
-        transaction_amount: Number(gift.suggestedValue),
-        description: `Contribuição para o presente "${gift.name}"`,
-        payment_method_id: "pix",
+        type: "online",
+        processing_mode: "automatic",
+        total_amount: valor,
         external_reference: `gift-${gift.id}-${Date.now()}`,
         payer: {
-          email: mpPayerId,
-          first_name: listaNomes[0],
+          email: mpPayerEmail,
+          // Em modo teste, "APRO" é o valor mágico que simula um Pix
+          // aprovado em sandbox. Em produção, usamos o nome de verdade.
+          first_name: mpMode === "test" ? "APRO" : listaNomes[0],
         },
-        metadata: {
-          giftId: gift.id,
-          giftName: gift.name,
-          contributorNames: listaNomes,
-          message: mensagem ? String(mensagem).trim() : "",
+        transactions: {
+          payments: [
+            {
+              amount: valor,
+              payment_method: {
+                id: "pix",
+                type: "bank_transfer",
+              },
+            },
+          ],
         },
+        description: `Contribuição para o presente "${gift.name}"`,
       },
       requestOptions: {
         idempotencyKey: randomUUID(),
       },
     });
 
+    const pagamento = order.transactions?.payments?.[0] || {};
+    const metodoPagamento = pagamento.payment_method || {};
+
     await prisma.contribution.create({
       data: {
         giftId: Number(id),
         names: listaNomes,
-        email: mpPayerId,
-        mpPaymentId: payment.id ? String(payment.id) : null,
+        email: mpPayerEmail,
+        mpPaymentId: order.id ? String(order.id) : null,
         message: mensagem ? String(mensagem).trim() : null,
         status: "pendente",
       },
     });
 
-    const transactionData =
-      payment.point_of_interaction?.transaction_data || {};
-
     res.json({
       sucesso: true,
-      paymentId: payment.id ? String(payment.id) : "",
-      qrCode: transactionData.qr_code || "",
-      qrCodeBase64: transactionData.qr_code_base64 || "",
-      ticketUrl: transactionData.ticket_url || "",
+      paymentId: order.id ? String(order.id) : "",
+      qrCode: metodoPagamento.qr_code || "",
+      qrCodeBase64: metodoPagamento.qr_code_base64 || "",
+      ticketUrl: metodoPagamento.ticket_url || "",
       valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
       nomePresente: gift.name,
     });
@@ -330,5 +347,6 @@ app.get("/api/admin/contribuicoes", checarSenhaAdmin, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n🎁 MyGift rodando em http://localhost:${PORT}\n`);
+  console.log(`\n🎁 GiftlyTo rodando em http://localhost:${PORT}\n`);
+  console.log(`Modo Mercado Pago: ${mpMode}`);
 });
