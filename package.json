@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node src/server.js",
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc && tsc -p tsconfig.client.json",
+    "start": "node dist/server.js",
     "db:migrate": "node src/db/migrate.js",
     "db:importar-json-antigo": "node src/db/importar-json-antigo.js",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -20,6 +22,10 @@
     "qrcode-generator": "^2.0.4"
   },
   "devDependencies": {
-    "prisma": "6.19"
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.0",
+    "prisma": "6.19",
+    "tsx": "^4.22.5",
+    "typescript": "6.0.3"
   }
 }

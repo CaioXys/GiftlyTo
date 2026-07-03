@@ -32,9 +32,7 @@ model Gift {
   description    String?
   category       String
   image          String         @default("")
-  storeLink      String         @default("") @map("store_link")
   suggestedValue Decimal?       @map("suggested_value") @db.Decimal(10, 2)
-  pixLink        String         @default("") @map("pix_link")
   contributions  Contribution[]
 
   @@map("gifts")

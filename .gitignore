@@ -3,3 +3,9 @@
 node_modules/
 
 /src/generated/prisma
+
+dist/
+
+.vscode/
+
+src/admin-panel/dist/

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GiftlyTo · Painel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+<!-- Tela de login -->
+<div id="telaLogin" class="tela-login">
+  <div class="cartao-login">
+    <p class="eyebrow">GiftlyTo</p>
+    <h1>Painel</h1>
+    <p class="subtitulo">Entre com a senha de administrador.</p>
+    <form id="formLogin">
+      <input type="password" id="inputSenha" placeholder="Senha" autocomplete="current-password" required />
+      <button type="submit">Entrar</button>
+    </form>
+    <p id="erroLogin" class="erro" hidden></p>
+  </div>
+</div>
+
+<!-- Painel principal -->
+<div id="telaPainel" class="tela-painel" hidden>
+  <header class="topo">
+    <div>
+      <p class="eyebrow">GiftlyTo</p>
+      <h1>Painel de presentes</h1>
+    </div>
+    <button id="btnNovoPresente" class="btn-primario">+ Novo presente</button>
+  </header>
+
+  <nav class="abas">
+    <button class="aba ativa" data-aba="presentes">Presentes</button>
+    <button class="aba" data-aba="contribuicoes">Contribuições</button>
+  </nav>
+
+  <section id="painelPresentes" class="painel">
+    <div id="gridPresentesAdmin" class="grid-presentes"></div>
+    <p id="vazioPresentes" class="estado-vazio" hidden>Nenhum presente cadastrado ainda. Clique em "+ Novo presente" pra começar.</p>
+  </section>
+
+  <section id="painelContribuicoes" class="painel" hidden>
+    <table class="tabela-contribuicoes">
+      <thead>
+        <tr>
+          <th>Presente</th>
+          <th>De</th>
+          <th>Status</th>
+          <th>Valor</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="corpoContribuicoes"></tbody>
+    </table>
+    <p id="vazioContribuicoes" class="estado-vazio" hidden>Nenhuma contribuição registrada ainda.</p>
+  </section>
+</div>
+
+<!-- Modal criar/editar presente -->
+<div id="modalPresente" class="modal-fundo" hidden>
+  <div class="modal-caixa">
+    <div class="modal-topo">
+      <h2 id="modalTitulo">Novo presente</h2>
+      <button id="modalFechar" class="botao-fechar" aria-label="Fechar">×</button>
+    </div>
+    <form id="formPresente">
+      <label>
+        Nome
+        <input type="text" id="campoNome" required />
+      </label>
+      <label>
+        Descrição
+        <textarea id="campoDescricao" rows="2"></textarea>
+      </label>
+      <div class="linha-dupla">
+        <label>
+          Categoria
+          <select id="campoCategoria">
+            <option value="casa">Casa</option>
+            <option value="experiencia">Experiência</option>
+            <option value="hobby">Hobby</option>
+            <option value="pix">Pix</option>
+            <option value="outro">Outro</option>
+          </select>
+        </label>
+        <label>
+          Valor sugerido (R$)
+          <input type="number" id="campoValor" step="0.01" min="0" />
+        </label>
+      </div>
+      <label>
+        URL da imagem
+        <input type="text" id="campoImagem" placeholder="https://..." />
+      </label>
+      <p id="erroForm" class="erro" hidden></p>
+      <div class="modal-acoes">
+        <button type="button" id="btnExcluir" class="btn-perigo" hidden>Excluir</button>
+        <div class="modal-acoes-direita">
+          <button type="button" id="btnCancelar" class="btn-secundario">Cancelar</button>
+          <button type="submit" class="btn-primario">Salvar</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="dist/admin.js"></script>
+</body>
+</html>
