@@ -33,10 +33,13 @@ if (mpMode === "test" && !process.env.MP_TEST_ACCESS_TOKEN) {
 const mercadoPagoClient = mpAccessToken
   ? new MercadoPagoConfig({ accessToken: mpAccessToken })
   : null;
-const mercadoPagoOrder = mercadoPagoClient ? new Order(mercadoPagoClient) : null;
+const mercadoPagoOrder = mercadoPagoClient
+  ? new Order(mercadoPagoClient)
+  : null;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "src", "public")));
+app.use("/assets", express.static(path.join(__dirname, "..", "src", "assets")));
 
 // Painel admin — só fica acessível se ADMIN_PANEL_PATH estiver definida
 // no .env. É uma URL secreta (ex: "painel-b60b1afce25122c9"), não
@@ -223,14 +226,13 @@ function validarAssinaturaWebhook(req: Request): boolean {
 
   if (!xSignature || !dataId) return false;
 
-  const partes = xSignature.split(",").reduce<Record<string, string>>(
-    (acc, parte) => {
+  const partes = xSignature
+    .split(",")
+    .reduce<Record<string, string>>((acc, parte) => {
       const [chave, valor] = parte.split("=");
       if (chave && valor) acc[chave.trim()] = valor.trim();
       return acc;
-    },
-    {},
-  );
+    }, {});
 
   const ts = partes.ts;
   const v1 = partes.v1;
@@ -244,7 +246,9 @@ function validarAssinaturaWebhook(req: Request): boolean {
   return assinaturaCalculada === v1;
 }
 
-function statusInternoParaStatus(statusMp: string): "pago" | "falhou" | "pendente" {
+function statusInternoParaStatus(
+  statusMp: string,
+): "pago" | "falhou" | "pendente" {
   if (statusMp === "processed" || statusMp === "approved") return "pago";
   if (statusMp === "failed" || statusMp === "cancelled") return "falhou";
   return "pendente";
@@ -263,90 +267,96 @@ app.get("/api/presentes", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/api/presentes/:id/contribuir", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { nomes, mensagem } = req.body as { nomes?: unknown; mensagem?: string };
+app.post(
+  "/api/presentes/:id/contribuir",
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { nomes, mensagem } = req.body as {
+      nomes?: unknown;
+      mensagem?: string;
+    };
 
-  const listaNomes = Array.isArray(nomes)
-    ? nomes.map((n) => String(n).trim()).filter((n) => n.length > 0)
-    : [];
-  if (listaNomes.length === 0) {
-    return res.status(400).json({ erro: "Informe ao menos um nome." });
-  }
-
-  try {
-    const gift = await prisma.gift.findUnique({ where: { id: Number(id) } });
-
-    if (!gift) {
-      return res.status(404).json({ erro: "Presente não encontrado." });
+    const listaNomes = Array.isArray(nomes)
+      ? nomes.map((n) => String(n).trim()).filter((n) => n.length > 0)
+      : [];
+    if (listaNomes.length === 0) {
+      return res.status(400).json({ erro: "Informe ao menos um nome." });
     }
 
-    if (!gift.suggestedValue) {
-      return res.status(400).json({
-        erro: "Este presente ainda não tem valor sugerido para gerar o Pix.",
+    try {
+      const gift = await prisma.gift.findUnique({ where: { id: Number(id) } });
+
+      if (!gift) {
+        return res.status(404).json({ erro: "Presente não encontrado." });
+      }
+
+      if (!gift.suggestedValue) {
+        return res.status(400).json({
+          erro: "Este presente ainda não tem valor sugerido para gerar o Pix.",
+        });
+      }
+
+      if (!mercadoPagoOrder) {
+        return res
+          .status(500)
+          .json({ erro: "O Mercado Pago não está configurado no servidor." });
+      }
+
+      const valor = Number(gift.suggestedValue).toFixed(2);
+
+      const order = await mercadoPagoOrder.create({
+        body: {
+          type: "online",
+          processing_mode: "automatic",
+          total_amount: valor,
+          external_reference: `gift-${gift.id}-${Date.now()}`,
+          payer: {
+            email: mpPayerEmail,
+            first_name: mpMode === "test" ? "APRO" : listaNomes[0],
+          },
+          transactions: {
+            payments: [
+              {
+                amount: valor,
+                payment_method: { id: "pix", type: "bank_transfer" },
+              },
+            ],
+          },
+          description: `Contribuição para o presente "${gift.name}"`,
+        },
+        requestOptions: { idempotencyKey: randomUUID() },
       });
-    }
 
-    if (!mercadoPagoOrder) {
-      return res
-        .status(500)
-        .json({ erro: "O Mercado Pago não está configurado no servidor." });
-    }
+      const pagamento = (order as any).transactions?.payments?.[0] || {};
+      const metodoPagamento = pagamento.payment_method || {};
 
-    const valor = Number(gift.suggestedValue).toFixed(2);
-
-    const order = await mercadoPagoOrder.create({
-      body: {
-        type: "online",
-        processing_mode: "automatic",
-        total_amount: valor,
-        external_reference: `gift-${gift.id}-${Date.now()}`,
-        payer: {
+      await prisma.contribution.create({
+        data: {
+          giftId: Number(id),
+          names: listaNomes,
           email: mpPayerEmail,
-          first_name: mpMode === "test" ? "APRO" : listaNomes[0],
+          mpPaymentId: order.id ? String(order.id) : null,
+          message: mensagem ? String(mensagem).trim() : null,
+          status: "pendente",
         },
-        transactions: {
-          payments: [
-            {
-              amount: valor,
-              payment_method: { id: "pix", type: "bank_transfer" },
-            },
-          ],
-        },
-        description: `Contribuição para o presente "${gift.name}"`,
-      },
-      requestOptions: { idempotencyKey: randomUUID() },
-    });
+      });
 
-    const pagamento = (order as any).transactions?.payments?.[0] || {};
-    const metodoPagamento = pagamento.payment_method || {};
-
-    await prisma.contribution.create({
-      data: {
-        giftId: Number(id),
-        names: listaNomes,
-        email: mpPayerEmail,
-        mpPaymentId: order.id ? String(order.id) : null,
-        message: mensagem ? String(mensagem).trim() : null,
-        status: "pendente",
-      },
-    });
-
-    res.json({
-      sucesso: true,
-      paymentId: order.id ? String(order.id) : "",
-      qrCode: metodoPagamento.qr_code || "",
-      qrCodeBase64: metodoPagamento.qr_code_base64 || "",
-      ticketUrl: metodoPagamento.ticket_url || "",
-      valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
-      nomePresente: gift.name,
-    });
-  } catch (err) {
-    console.error(err);
-    const mpErro = montarErroMercadoPago(err);
-    res.status(mpErro.status).json({ erro: mpErro.erro });
-  }
-});
+      res.json({
+        sucesso: true,
+        paymentId: order.id ? String(order.id) : "",
+        qrCode: metodoPagamento.qr_code || "",
+        qrCodeBase64: metodoPagamento.qr_code_base64 || "",
+        ticketUrl: metodoPagamento.ticket_url || "",
+        valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
+        nomePresente: gift.name,
+      });
+    } catch (err) {
+      console.error(err);
+      const mpErro = montarErroMercadoPago(err);
+      res.status(mpErro.status).json({ erro: mpErro.erro });
+    }
+  },
+);
 
 // Webhook do Mercado Pago — precisa de URL pública HTTPS configurada
 // no painel (Suas integrações > sua aplicação > Webhooks).
@@ -355,7 +365,8 @@ app.post("/api/webhooks/mercadopago", async (req: Request, res: Response) => {
 
   try {
     const tipo = req.query.type || (req.body as any)?.type;
-    const orderId = (req.query["data.id"] as string) || (req.body as any)?.data?.id;
+    const orderId =
+      (req.query["data.id"] as string) || (req.body as any)?.data?.id;
 
     if (tipo !== "order" || !orderId) return;
 
@@ -392,41 +403,46 @@ app.post("/api/webhooks/mercadopago", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/presentes/:id/minhas-contribuicoes", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const nomeAtual = req.query.nome ? String(req.query.nome) : null;
+app.get(
+  "/api/presentes/:id/minhas-contribuicoes",
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const nomeAtual = req.query.nome ? String(req.query.nome) : null;
 
-  if (!nomeAtual) {
-    return res.status(400).json({ erro: "Informe o nome para consultar." });
-  }
+    if (!nomeAtual) {
+      return res.status(400).json({ erro: "Informe o nome para consultar." });
+    }
 
-  try {
-    const contribuicoes = await prisma.contribution.findMany({
-      where: { giftId: Number(id) },
-      orderBy: { createdAt: "asc" },
-      include: { gift: true },
-    });
+    try {
+      const contribuicoes = await prisma.contribution.findMany({
+        where: { giftId: Number(id) },
+        orderBy: { createdAt: "asc" },
+        include: { gift: true },
+      });
 
-    const nomeNormalizado = nomeAtual.toLowerCase();
-    const minhasContribuicoes = contribuicoes.filter(
-      (c) =>
-        Array.isArray(c.names) &&
-        c.names.some((nome) => nome.toLowerCase() === nomeNormalizado),
-    );
+      const nomeNormalizado = nomeAtual.toLowerCase();
+      const minhasContribuicoes = contribuicoes.filter(
+        (c) =>
+          Array.isArray(c.names) &&
+          c.names.some((nome) => nome.toLowerCase() === nomeNormalizado),
+      );
 
-    res.json({
-      contribuicoes: minhasContribuicoes.map((c) => ({
-        id: c.id,
-        valor: c.gift.suggestedValue ? Number(c.gift.suggestedValue) : 0,
-        status: c.status,
-        data: c.createdAt.toISOString(),
-      })),
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Não foi possível buscar as contribuições." });
-  }
-});
+      res.json({
+        contribuicoes: minhasContribuicoes.map((c) => ({
+          id: c.id,
+          valor: c.gift.suggestedValue ? Number(c.gift.suggestedValue) : 0,
+          status: c.status,
+          data: c.createdAt.toISOString(),
+        })),
+      });
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ erro: "Não foi possível buscar as contribuições." });
+    }
+  },
+);
 
 app.get("/api/config", (req: Request, res: Response) => {
   res.json({ mapApiKey: process.env.MAP_APIKEY });
@@ -451,15 +467,19 @@ app.post("/api/admin/login", (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/admin/presentes", checarSenhaAdmin, async (req: Request, res: Response) => {
-  try {
-    const dados = await buscarDadosCompletos(null);
-    res.json(dados);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Não foi possível carregar os presentes." });
-  }
-});
+app.get(
+  "/api/admin/presentes",
+  checarSenhaAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const dados = await buscarDadosCompletos(null);
+      res.json(dados);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ erro: "Não foi possível carregar os presentes." });
+    }
+  },
+);
 
 interface CorpoPresenteAdmin {
   nome?: string;
@@ -484,97 +504,119 @@ function montarDadosPresente(corpo: CorpoPresenteAdmin) {
   };
 }
 
-app.post("/api/admin/presentes", checarSenhaAdmin, async (req: Request, res: Response) => {
-  const corpo = req.body as CorpoPresenteAdmin;
+app.post(
+  "/api/admin/presentes",
+  checarSenhaAdmin,
+  async (req: Request, res: Response) => {
+    const corpo = req.body as CorpoPresenteAdmin;
 
-  if (!corpo.nome || String(corpo.nome).trim().length === 0) {
-    return res.status(400).json({ erro: "O nome do presente é obrigatório." });
-  }
+    if (!corpo.nome || String(corpo.nome).trim().length === 0) {
+      return res
+        .status(400)
+        .json({ erro: "O nome do presente é obrigatório." });
+    }
 
-  try {
-    const party = await prisma.party.findFirst();
-    if (!party) {
-      return res.status(400).json({
-        erro: "Configure os dados da festa (Party) antes de criar presentes.",
+    try {
+      const party = await prisma.party.findFirst();
+      if (!party) {
+        return res.status(400).json({
+          erro: "Configure os dados da festa (Party) antes de criar presentes.",
+        });
+      }
+
+      const gift = await prisma.gift.create({
+        data: {
+          ...montarDadosPresente(corpo),
+          party: { connect: { id: party.id } },
+        },
       });
+      res.status(201).json({ sucesso: true, id: gift.id });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ erro: "Não foi possível criar o presente." });
+    }
+  },
+);
+
+app.put(
+  "/api/admin/presentes/:id",
+  checarSenhaAdmin,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const corpo = req.body as CorpoPresenteAdmin;
+
+    if (!corpo.nome || String(corpo.nome).trim().length === 0) {
+      return res
+        .status(400)
+        .json({ erro: "O nome do presente é obrigatório." });
     }
 
-    const gift = await prisma.gift.create({
-      data: {
-        ...montarDadosPresente(corpo),
-        party: { connect: { id: party.id } },
-      },
-    });
-    res.status(201).json({ sucesso: true, id: gift.id });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Não foi possível criar o presente." });
-  }
-});
-
-app.put("/api/admin/presentes/:id", checarSenhaAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const corpo = req.body as CorpoPresenteAdmin;
-
-  if (!corpo.nome || String(corpo.nome).trim().length === 0) {
-    return res.status(400).json({ erro: "O nome do presente é obrigatório." });
-  }
-
-  try {
-    await prisma.gift.update({
-      where: { id: Number(id) },
-      data: montarDadosPresente(corpo),
-    });
-    res.json({ sucesso: true });
-  } catch (err: any) {
-    console.error(err);
-    if (err.code === "P2025") {
-      return res.status(404).json({ erro: "Presente não encontrado." });
+    try {
+      await prisma.gift.update({
+        where: { id: Number(id) },
+        data: montarDadosPresente(corpo),
+      });
+      res.json({ sucesso: true });
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === "P2025") {
+        return res.status(404).json({ erro: "Presente não encontrado." });
+      }
+      res.status(500).json({ erro: "Não foi possível editar o presente." });
     }
-    res.status(500).json({ erro: "Não foi possível editar o presente." });
-  }
-});
+  },
+);
 
-app.delete("/api/admin/presentes/:id", checarSenhaAdmin, async (req: Request, res: Response) => {
-  const { id } = req.params;
+app.delete(
+  "/api/admin/presentes/:id",
+  checarSenhaAdmin,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
 
-  try {
-    await prisma.contribution.deleteMany({ where: { giftId: Number(id) } });
-    await prisma.gift.delete({ where: { id: Number(id) } });
-    res.json({ sucesso: true });
-  } catch (err: any) {
-    console.error(err);
-    if (err.code === "P2025") {
-      return res.status(404).json({ erro: "Presente não encontrado." });
+    try {
+      await prisma.contribution.deleteMany({ where: { giftId: Number(id) } });
+      await prisma.gift.delete({ where: { id: Number(id) } });
+      res.json({ sucesso: true });
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === "P2025") {
+        return res.status(404).json({ erro: "Presente não encontrado." });
+      }
+      res.status(500).json({ erro: "Não foi possível remover o presente." });
     }
-    res.status(500).json({ erro: "Não foi possível remover o presente." });
-  }
-});
+  },
+);
 
-app.get("/api/admin/contribuicoes", checarSenhaAdmin, async (req: Request, res: Response) => {
-  try {
-    const contribuicoes = await prisma.contribution.findMany({
-      include: { gift: true },
-      orderBy: { createdAt: "desc" },
-    });
+app.get(
+  "/api/admin/contribuicoes",
+  checarSenhaAdmin,
+  async (req: Request, res: Response) => {
+    try {
+      const contribuicoes = await prisma.contribution.findMany({
+        include: { gift: true },
+        orderBy: { createdAt: "desc" },
+      });
 
-    res.json({
-      contribuicoes: contribuicoes.map((c) => ({
-        id: c.id,
-        presente: c.gift.name,
-        nomes: c.names,
-        payerId: c.email,
-        paymentId: c.mpPaymentId,
-        status: c.status,
-        valor: c.gift.suggestedValue ? Number(c.gift.suggestedValue) : 0,
-        data: c.createdAt.toISOString(),
-      })),
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Não foi possível carregar as contribuições." });
-  }
-});
+      res.json({
+        contribuicoes: contribuicoes.map((c) => ({
+          id: c.id,
+          presente: c.gift.name,
+          nomes: c.names,
+          payerId: c.email,
+          paymentId: c.mpPaymentId,
+          status: c.status,
+          valor: c.gift.suggestedValue ? Number(c.gift.suggestedValue) : 0,
+          data: c.createdAt.toISOString(),
+        })),
+      });
+    } catch (err) {
+      console.error(err);
+      res
+        .status(500)
+        .json({ erro: "Não foi possível carregar as contribuições." });
+    }
+  },
+);
 
 app.listen(PORT, () => {
   console.log(`\n🎁 GiftlyTo rodando em http://localhost:${PORT}\n`);
