@@ -27,10 +27,15 @@
   display: none !important;
 }
 
+html {
+  background: var(--petroleo);
+}
+
 body {
   font-family: "Inter", sans-serif;
   background: var(--creme);
   color: var(--texto);
+  min-height: 100dvh;
   overflow-x: hidden;
 }
 
@@ -368,6 +373,7 @@ h2,
   transform: scale(1.05);
   position: relative;
   z-index: 1;
+  pointer-events: none;
 }
 
 .mapa-container::before {
@@ -380,6 +386,7 @@ h2,
   filter: blur(20px) brightness(0.9);
   z-index: 0;
   overflow: hidden;
+  pointer-events: none;
 }
 
 .mapa-real {
@@ -406,9 +413,11 @@ h2,
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: 8px;
   transition: transform 0.2s ease;
+  z-index: 2;
 }
 
 .mapa-botao-ver:hover {
@@ -429,6 +438,7 @@ h2,
   justify-content: center;
   padding: 20px;
   z-index: 100;
+  overflow-y: auto;
 }
 
 .modal {
@@ -439,6 +449,9 @@ h2,
   width: 100%;
   position: relative;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-fechar {
@@ -671,8 +684,47 @@ input:focus-visible {
   .hero {
     padding: 48px 18px 64px;
   }
+
+  .localizacao {
+    padding: 0 16px;
+  }
+
+  .mapa-container,
+  .mapa-real {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .mapa-botao-ver {
+    width: calc(100% - 32px);
+    max-width: 280px;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+  }
+
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .modal {
+    max-height: calc(100dvh - 24px);
+    padding: 24px 20px;
+  }
+
+  .modal-fechar {
+    top: 16px;
+    right: 12px;
+  }
+
+  .qrcode-container svg,
+  .qrcode-container img {
+    max-width: min(220px, 72vw);
+  }
+
   .contagem {
     gap: 10px;
+    flex-wrap: wrap;
   }
   .contagem-item {
     min-width: 64px;
