@@ -39,6 +39,11 @@ body {
   overflow-x: hidden;
 }
 
+body.modal-aberto {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 h1,
 h2,
 .contagem-numero,
@@ -439,6 +444,7 @@ h2,
   padding: 20px;
   z-index: 100;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .modal {
@@ -452,6 +458,7 @@ h2,
   max-height: calc(100dvh - 40px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .modal-fechar {
