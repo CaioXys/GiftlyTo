@@ -2,6 +2,7 @@
 let dadosFesta = null;
 let categoriaAtiva = "todos";
 let presenteAtual = null;
+let posicaoScrollFundo = 0;
 
 const NOMES_CATEGORIA = {
   casa: "Casa",
@@ -193,6 +194,27 @@ function obterNomesPreenchidos() {
     .filter((nome) => nome.length > 0);
 }
 
+function bloquearScrollFundo() {
+  posicaoScrollFundo =
+    window.scrollY || document.documentElement.scrollTop || 0;
+  document.body.classList.add("modal-aberto");
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${posicaoScrollFundo}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+}
+
+function desbloquearScrollFundo() {
+  document.body.classList.remove("modal-aberto");
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  window.scrollTo(0, posicaoScrollFundo);
+}
+
 // ---------- Modal de contribuição ----------
 function configurarModalContribuicao() {
   const modal = document.getElementById("modalReserva");
@@ -271,6 +293,7 @@ function configurarModalContribuicao() {
 
 function abrirModalContribuicao(presente) {
   presenteAtual = presente;
+  bloquearScrollFundo();
 
   document.getElementById("modalPresenteNome").textContent =
     presente.nome || "";
@@ -291,6 +314,7 @@ function abrirModalContribuicao(presente) {
 
 function fecharModalContribuicao() {
   document.getElementById("modalReserva").hidden = true;
+  desbloquearScrollFundo();
 }
 
 function mostrarPix(dados) {
