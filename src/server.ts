@@ -249,8 +249,10 @@ function validarAssinaturaWebhook(req: Request): boolean {
 function statusInternoParaStatus(
   statusMp: string,
 ): "pago" | "falhou" | "pendente" {
-  if (statusMp === "processed" || statusMp === "approved") return "pago";
-  if (statusMp === "failed" || statusMp === "cancelled") return "falhou";
+  if (statusMp === "processed") return "pago";
+  if (["canceled", "failed", "expired", "refunded"].includes(statusMp)) {
+    return "falhou";
+  }
   return "pendente";
 }
 
@@ -446,6 +448,23 @@ app.get(
 
 app.get("/api/config", (req: Request, res: Response) => {
   res.json({ mapApiKey: process.env.MAP_APIKEY });
+});
+
+app.get("/api/contribuicoes/:paymentId/status", async (req: Request, res: Response) => {
+  const paymentId = String(req.params.paymentId);
+  try {
+    const contribuicao = await prisma.contribution.findFirst({
+      where: { mpPaymentId: paymentId },
+      select: { status: true },
+    });
+    if (!contribuicao) {
+      return res.status(404).json({ erro: "Contribuição não encontrada." });
+    }
+    res.json({ status: contribuicao.status });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ erro: "Não foi possível consultar o status." });
+  }
 });
 
 // --- Rotas administrativas ---

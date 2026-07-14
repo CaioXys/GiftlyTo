@@ -347,4 +347,43 @@ function mostrarPix(dados) {
   } else {
     linkBtn.hidden = true;
   }
+
+  if (dados.paymentId) {
+    monitorarPagamento(dados.paymentId);
+  }
+}
+
+function monitorarPagamento(paymentId) {
+  const intervalo = setInterval(async () => {
+    try {
+      const resposta = await fetch(`/api/contribuicoes/${paymentId}/status`);
+      if (!resposta.ok) return;
+
+      const { status } = await resposta.json();
+
+      if (status === "pago") {
+        clearInterval(intervalo);
+        exibirConfirmacaoPagamento();
+      } else if (status === "falhou") {
+        clearInterval(intervalo);
+        exibirFalhaPagamento();
+      }
+    } catch (err) {
+      console.error("Erro ao checar status do pagamento:", err);
+    }
+  }, 4000);
+
+  setTimeout(() => clearInterval(intervalo), 10 * 60 * 1000);
+}
+
+function exibirConfirmacaoPagamento() {
+  document.getElementById("qrcodeContainer").innerHTML = "";
+  document.getElementById("linkAbrirPix").hidden = true;
+  document.getElementById("sucessoTexto").textContent =
+    "🎉 Pagamento confirmado! Seu presente já está garantido.";
+}
+
+function exibirFalhaPagamento() {
+  document.getElementById("sucessoTexto").textContent =
+    "❌ Pagamento não confirmado. Feche e tente novamente, se quiser.";
 }
