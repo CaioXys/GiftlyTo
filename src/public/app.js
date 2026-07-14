@@ -295,8 +295,14 @@ function abrirModalContribuicao(presente) {
   presenteAtual = presente;
   bloquearScrollFundo();
 
-  document.getElementById("modalPresenteNome").textContent =
-    presente.nome || "";
+  document.getElementById("modalTitulo").hidden = false;
+  document.getElementById("modalPresenteNome").hidden = false;
+  document.getElementById("modalValorPresente").hidden = false;
+  document.querySelector(".emoji-sucesso").textContent = "🎉";
+  document.querySelector(".sucesso-titulo").textContent = "Combinado!";
+  document.querySelector(".sucesso-titulo").classList.remove("resultado-grande");
+
+  document.getElementById("modalPresenteNome").textContent = presente.nome || "";
 
   const valorTexto = presente.valorSugerido
     ? `Valor deste presente: ${formatarMoeda(presente.valorSugerido)} via Pix`
@@ -377,13 +383,35 @@ function monitorarPagamento(paymentId) {
 }
 
 function exibirConfirmacaoPagamento() {
+  ocultarCabecalhoModal();
   document.getElementById("qrcodeContainer").innerHTML = "";
   document.getElementById("linkAbrirPix").hidden = true;
-  document.getElementById("sucessoTexto").textContent =
-    "🎉 Pagamento confirmado! Seu presente já está garantido.";
+  document.getElementById("sucessoTexto").textContent = "";
+
+  const emoji = document.querySelector(".emoji-sucesso");
+  const titulo = document.querySelector(".sucesso-titulo");
+
+  emoji.textContent = "✅";
+  titulo.textContent = "Concluído!";
+  titulo.classList.add("resultado-grande");
 }
 
 function exibirFalhaPagamento() {
-  document.getElementById("sucessoTexto").textContent =
-    "❌ Pagamento não confirmado. Feche e tente novamente, se quiser.";
+  ocultarCabecalhoModal();
+  document.getElementById("qrcodeContainer").innerHTML = "";
+  document.getElementById("linkAbrirPix").hidden = true;
+  document.getElementById("sucessoTexto").textContent = "";
+
+  const emoji = document.querySelector(".emoji-sucesso");
+  const titulo = document.querySelector(".sucesso-titulo");
+
+  emoji.textContent = "❌";
+  titulo.textContent = "Recusado";
+  titulo.classList.add("resultado-grande");
+}
+
+function ocultarCabecalhoModal() {
+  document.getElementById("modalTitulo").hidden = true;
+  document.getElementById("modalPresenteNome").hidden = true;
+  document.getElementById("modalValorPresente").hidden = true;
 }
