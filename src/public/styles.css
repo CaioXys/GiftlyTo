@@ -461,6 +461,11 @@ h2,
   overscroll-behavior: contain;
 }
 
+.resultado-grande {
+  font-size: 2.2rem;
+  margin: 20px 0 8px;
+}
+
 .modal-fechar {
   position: absolute;
   top: 16px;
