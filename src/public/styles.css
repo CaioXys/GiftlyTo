@@ -6,6 +6,7 @@
   --petroleo: #1b5e63;
   --petroleo-claro: #2d7a80;
   --verde: #74f320;
+  --roxo: #30004d;
   --girassol: #ffc857;
   --rosa: #ff8fa3;
   --verde-pix: #32bcad;
@@ -227,7 +228,7 @@ h2,
   width: 100%;
 }
 .card-fita.cat-casa {
-  background: var(--coral);
+  background: var(--roxo);
 }
 .card-fita.cat-experiencia {
   background: var(--verde);

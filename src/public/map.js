@@ -20,8 +20,8 @@ async function mostrarCapaMapa() {
     }
 
     const img = document.getElementById('mapaCapa');
-    const url = `https://maps.googleapis.com/maps/api/staticmap?center=${LOCAL_FESTA.lat},${LOCAL_FESTA.lng}&zoom=15&size=640x360&markers=color:red%7C${LOCAL_FESTA.lat},${LOCAL_FESTA.lng}&key=${chaveApiCache}`;
-    img.src = url;
+    img.src = "../assets/images/mapa-capa.png"
+    
   } catch (erro) {
     console.error('Não foi possível carregar a capa do mapa:', erro);
   }
