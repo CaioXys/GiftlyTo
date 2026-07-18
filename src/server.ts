@@ -40,6 +40,12 @@ const mercadoPagoOrder = mercadoPagoClient
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "src", "public")));
 app.use("/assets", express.static(path.join(__dirname, "..", "src", "assets")));
+app.use(
+  "/vendor/fireworks-js",
+  express.static(
+    path.join(__dirname, "..", "node_modules", "fireworks-js", "dist"),
+  ),
+);
 
 // Painel admin — só fica acessível se ADMIN_PANEL_PATH estiver definida
 // no .env. É uma URL secreta (ex: "painel-b60b1afce25122c9"), não
@@ -279,10 +285,16 @@ app.post(
     };
 
     const listaNomes = Array.isArray(nomes)
-      ? nomes.map((n) => String(n).trim()).filter((n) => n.length > 0)
+      ? nomes.map((n) => String(n).trim())
       : [];
     if (listaNomes.length === 0) {
       return res.status(400).json({ erro: "Informe ao menos um nome." });
+    }
+
+    if (listaNomes.some((nome) => nome.length === 0)) {
+      return res
+        .status(400)
+        .json({ erro: "Preencha todos os nomes adicionados." });
     }
 
     try {
@@ -450,22 +462,25 @@ app.get("/api/config", (req: Request, res: Response) => {
   res.json({ mapApiKey: process.env.MAP_APIKEY });
 });
 
-app.get("/api/contribuicoes/:paymentId/status", async (req: Request, res: Response) => {
-  const paymentId = String(req.params.paymentId);
-  try {
-    const contribuicao = await prisma.contribution.findFirst({
-      where: { mpPaymentId: paymentId },
-      select: { status: true },
-    });
-    if (!contribuicao) {
-      return res.status(404).json({ erro: "Contribuição não encontrada." });
+app.get(
+  "/api/contribuicoes/:paymentId/status",
+  async (req: Request, res: Response) => {
+    const paymentId = String(req.params.paymentId);
+    try {
+      const contribuicao = await prisma.contribution.findFirst({
+        where: { mpPaymentId: paymentId },
+        select: { status: true },
+      });
+      if (!contribuicao) {
+        return res.status(404).json({ erro: "Contribuição não encontrada." });
+      }
+      res.json({ status: contribuicao.status });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ erro: "Não foi possível consultar o status." });
     }
-    res.json({ status: contribuicao.status });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Não foi possível consultar o status." });
-  }
-});
+  },
+);
 
 // --- Rotas administrativas ---
 
@@ -486,7 +501,8 @@ app.post("/api/admin/login", (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/admin/presentes",
+app.get(
+  "/api/admin/presentes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     try {
@@ -522,7 +538,8 @@ function montarDadosPresente(corpo: CorpoPresenteAdmin) {
   };
 }
 
-app.post("/api/admin/presentes",
+app.post(
+  "/api/admin/presentes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const corpo = req.body as CorpoPresenteAdmin;
@@ -555,7 +572,8 @@ app.post("/api/admin/presentes",
   },
 );
 
-app.put("/api/admin/presentes/:id",
+app.put(
+  "/api/admin/presentes/:id",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -583,7 +601,8 @@ app.put("/api/admin/presentes/:id",
   },
 );
 
-app.delete("/api/admin/presentes/:id",
+app.delete(
+  "/api/admin/presentes/:id",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -602,7 +621,8 @@ app.delete("/api/admin/presentes/:id",
   },
 );
 
-app.get("/api/admin/contribuicoes",
+app.get(
+  "/api/admin/contribuicoes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     try {
