@@ -4,6 +4,8 @@ import path from "path";
 import { PrismaClient, Gift, Contribution } from "@prisma/client";
 import { randomUUID, createHmac } from "crypto";
 import { MercadoPagoConfig, Order } from "mercadopago";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 
 const prisma = new PrismaClient();
 const app = express();
@@ -40,6 +42,12 @@ const mercadoPagoOrder = mercadoPagoClient
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "src", "public")));
 app.use("/assets", express.static(path.join(__dirname, "..", "src", "assets")));
+app.use(
+  "/vendor/fireworks-js",
+  express.static(
+    path.join(__dirname, "..", "node_modules", "fireworks-js", "dist"),
+  ),
+);
 
 // Painel admin — só fica acessível se ADMIN_PANEL_PATH estiver definida
 // no .env. É uma URL secreta (ex: "painel-b60b1afce25122c9"), não
@@ -61,6 +69,278 @@ if (!ADMIN_PANEL_PATH) {
     express.static(path.join(__dirname, "..", "src", "admin-panel")),
   );
 }
+
+const swaggerSpec = swaggerJsdoc({
+  definition: {
+    openapi: "3.0.3",
+    info: {
+      title: "MyGift API",
+      version: "1.1.0",
+      description: "Documentação dos endpoints do MyGift.",
+    },
+    servers: [{ url: `http://localhost:${PORT}` }],
+    components: {
+      securitySchemes: {
+        AdminPassword: {
+          type: "apiKey",
+          in: "header",
+          name: "x-admin-password",
+        },
+      },
+    },
+    paths: {
+      "/api/presentes": {
+        get: {
+          tags: ["Presentes"],
+          summary: "Lista os presentes e os dados da festa",
+          parameters: [
+            {
+              in: "query",
+              name: "nome",
+              required: false,
+              schema: { type: "string" },
+              description: "Nome para calcular as contribuições dessa pessoa.",
+            },
+          ],
+          responses: {
+            200: { description: "Dados da festa e lista de presentes." },
+          },
+        },
+      },
+      "/api/presentes/{id}/contribuir": {
+        post: {
+          tags: ["Presentes"],
+          summary: "Cria uma contribuição Pix para um presente",
+          parameters: [
+            {
+              in: "path",
+              name: "id",
+              required: true,
+              schema: { type: "integer" },
+              description: "ID do presente.",
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["nomes"],
+                  properties: {
+                    nomes: { type: "array", items: { type: "string" } },
+                    mensagem: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: { description: "Pix gerado com sucesso." },
+            400: {
+              description: "Dados inválidos ou presente sem valor sugerido.",
+            },
+            404: { description: "Presente não encontrado." },
+          },
+        },
+      },
+      "/api/webhooks/mercadopago": {
+        post: {
+          tags: ["Webhooks"],
+          summary: "Recebe atualizações de pagamento do Mercado Pago",
+          responses: { 200: { description: "Webhook recebido." } },
+        },
+      },
+      "/api/presentes/{id}/minhas-contribuicoes": {
+        get: {
+          tags: ["Presentes"],
+          summary: "Lista as contribuições de uma pessoa para um presente",
+          parameters: [
+            {
+              in: "path",
+              name: "id",
+              required: true,
+              schema: { type: "integer" },
+            },
+            {
+              in: "query",
+              name: "nome",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: { description: "Contribuições filtradas pelo nome." },
+            400: { description: "Nome ausente." },
+          },
+        },
+      },
+      "/api/config": {
+        get: {
+          tags: ["Configuração"],
+          summary: "Retorna a chave do mapa usada no front-end",
+          responses: { 200: { description: "Configuração pública." } },
+        },
+      },
+      "/api/contribuicoes/{paymentId}/status": {
+        get: {
+          tags: ["Contribuições"],
+          summary: "Consulta o status de uma contribuição pelo paymentId",
+          parameters: [
+            {
+              in: "path",
+              name: "paymentId",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: { description: "Status da contribuição." },
+            404: { description: "Contribuição não encontrada." },
+          },
+        },
+      },
+      "/api/admin/login": {
+        post: {
+          tags: ["Admin"],
+          summary: "Valida a senha do painel administrativo",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["senha"],
+                  properties: { senha: { type: "string" } },
+                },
+              },
+            },
+          },
+          responses: {
+            200: { description: "Login aprovado." },
+            401: { description: "Senha incorreta." },
+          },
+        },
+      },
+      "/api/admin/presentes": {
+        get: {
+          tags: ["Admin"],
+          summary: "Lista os presentes com dados administrativos",
+          security: [{ AdminPassword: [] }],
+          responses: {
+            200: { description: "Dados administrativos dos presentes." },
+            401: { description: "Senha administrativa inválida." },
+          },
+        },
+        post: {
+          tags: ["Admin"],
+          summary: "Cria um novo presente",
+          security: [{ AdminPassword: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    nome: { type: "string" },
+                    descricao: { type: "string" },
+                    categoria: { type: "string" },
+                    imagem: { type: "string" },
+                    valorSugerido: {
+                      oneOf: [{ type: "string" }, { type: "number" }],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            201: { description: "Presente criado." },
+            400: { description: "Dados inválidos." },
+            401: { description: "Senha administrativa inválida." },
+          },
+        },
+      },
+      "/api/admin/presentes/{id}": {
+        put: {
+          tags: ["Admin"],
+          summary: "Atualiza um presente",
+          security: [{ AdminPassword: [] }],
+          parameters: [
+            {
+              in: "path",
+              name: "id",
+              required: true,
+              schema: { type: "integer" },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    nome: { type: "string" },
+                    descricao: { type: "string" },
+                    categoria: { type: "string" },
+                    imagem: { type: "string" },
+                    valorSugerido: {
+                      oneOf: [{ type: "string" }, { type: "number" }],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: { description: "Presente atualizado." },
+            401: { description: "Senha administrativa inválida." },
+            404: { description: "Presente não encontrado." },
+          },
+        },
+        delete: {
+          tags: ["Admin"],
+          summary: "Remove um presente e suas contribuições",
+          security: [{ AdminPassword: [] }],
+          parameters: [
+            {
+              in: "path",
+              name: "id",
+              required: true,
+              schema: { type: "integer" },
+            },
+          ],
+          responses: {
+            200: { description: "Presente removido." },
+            401: { description: "Senha administrativa inválida." },
+            404: { description: "Presente não encontrado." },
+          },
+        },
+      },
+      "/api/admin/contribuicoes": {
+        get: {
+          tags: ["Admin"],
+          summary: "Lista as contribuições com dados completos",
+          security: [{ AdminPassword: [] }],
+          responses: {
+            200: { description: "Lista de contribuições." },
+            401: { description: "Senha administrativa inválida." },
+          },
+        },
+      },
+    },
+  },
+  apis: [path.join(process.cwd(), "src", "server.ts")],
+});
+
+app.get("/api-docs.json", (_req: Request, res: Response) => {
+  res.json(swaggerSpec);
+});
+
+app.get("/api-docs", swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve);
 
 // --- Tipos auxiliares ---
 
@@ -279,10 +559,16 @@ app.post(
     };
 
     const listaNomes = Array.isArray(nomes)
-      ? nomes.map((n) => String(n).trim()).filter((n) => n.length > 0)
+      ? nomes.map((n) => String(n).trim())
       : [];
     if (listaNomes.length === 0) {
       return res.status(400).json({ erro: "Informe ao menos um nome." });
+    }
+
+    if (listaNomes.some((nome) => nome.length === 0)) {
+      return res
+        .status(400)
+        .json({ erro: "Preencha todos os nomes adicionados." });
     }
 
     try {
@@ -450,22 +736,25 @@ app.get("/api/config", (req: Request, res: Response) => {
   res.json({ mapApiKey: process.env.MAP_APIKEY });
 });
 
-app.get("/api/contribuicoes/:paymentId/status", async (req: Request, res: Response) => {
-  const paymentId = String(req.params.paymentId);
-  try {
-    const contribuicao = await prisma.contribution.findFirst({
-      where: { mpPaymentId: paymentId },
-      select: { status: true },
-    });
-    if (!contribuicao) {
-      return res.status(404).json({ erro: "Contribuição não encontrada." });
+app.get(
+  "/api/contribuicoes/:paymentId/status",
+  async (req: Request, res: Response) => {
+    const paymentId = String(req.params.paymentId);
+    try {
+      const contribuicao = await prisma.contribution.findFirst({
+        where: { mpPaymentId: paymentId },
+        select: { status: true },
+      });
+      if (!contribuicao) {
+        return res.status(404).json({ erro: "Contribuição não encontrada." });
+      }
+      res.json({ status: contribuicao.status });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ erro: "Não foi possível consultar o status." });
     }
-    res.json({ status: contribuicao.status });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ erro: "Não foi possível consultar o status." });
-  }
-});
+  },
+);
 
 // --- Rotas administrativas ---
 
@@ -486,7 +775,8 @@ app.post("/api/admin/login", (req: Request, res: Response) => {
   }
 });
 
-app.get("/api/admin/presentes",
+app.get(
+  "/api/admin/presentes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     try {
@@ -522,7 +812,8 @@ function montarDadosPresente(corpo: CorpoPresenteAdmin) {
   };
 }
 
-app.post("/api/admin/presentes",
+app.post(
+  "/api/admin/presentes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const corpo = req.body as CorpoPresenteAdmin;
@@ -555,7 +846,8 @@ app.post("/api/admin/presentes",
   },
 );
 
-app.put("/api/admin/presentes/:id",
+app.put(
+  "/api/admin/presentes/:id",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -583,7 +875,8 @@ app.put("/api/admin/presentes/:id",
   },
 );
 
-app.delete("/api/admin/presentes/:id",
+app.delete(
+  "/api/admin/presentes/:id",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -602,7 +895,8 @@ app.delete("/api/admin/presentes/:id",
   },
 );
 
-app.get("/api/admin/contribuicoes",
+app.get(
+  "/api/admin/contribuicoes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     try {

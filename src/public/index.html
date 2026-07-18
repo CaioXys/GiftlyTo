@@ -13,10 +13,8 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Confete decorativo de fundo -->
-    <div class="confete-bg" aria-hidden="true"></div>
-
     <header class="hero">
+      <div class="hero-fogos" id="heroFogos" aria-hidden="true"></div>
       <div class="hero-conteudo">
         <span class="hero-eyebrow">GiftlyTo • Lista de presentes</span>
         <h1 class="hero-titulo" id="tituloFesta">Carregando...</h1>
@@ -61,7 +59,8 @@
       <section class="localizacao">
         <h2 class="localizacao-titulo">📍 Onde vai ser a festa</h2>
         <p class="localizacao-endereco">
-          Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP, 08775-420
+          Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP,
+          08775-420
         </p>
 
         <div class="mapa-container" id="mapaContainer">
@@ -95,7 +94,7 @@
         <div id="formReserva">
           <label class="modal-label">Quem está mandando?</label>
           <div id="listaNomes">
-            <input type="text" class="input-nome" placeholder="Seu nome" />
+            <input type="text" class="input-nome" placeholder="Seu nome" required />
           </div>
           <button
             type="button"
@@ -142,6 +141,7 @@
       </div>
     </div>
 
+    <script src="/vendor/fireworks-js/index.umd.js"></script>
     <script src="qrcode.js"></script>
     <script src="app.js"></script>
     <script src="map.js"></script>

@@ -45,9 +45,23 @@ body.modal-aberto {
   overscroll-behavior: none;
 }
 
+.hero-titulo {
+  text-shadow: 0 0 0px #fff, 
+               0 0 10px #f5f2f5;
+}
+
+h1, h2, .contagem-numero {
+  font-family: "Baloo 2", sans-serif;
+  
+}
+
+.contagem-label {
+  text-shadow: 0 0 0px #fff, 
+               0 0 10px #f5f2f5;
+}
+
 h1,
 h2,
-.contagem-numero,
 .filtro-btn,
 .btn-confirmar {
   font-family: "Baloo 2", sans-serif;
@@ -67,21 +81,17 @@ h2,
   overflow: hidden;
 }
 
-/* Confete decorativo, só dentro do hero (não vaza pro resto do site) */
-.hero::before {
-  content: "";
+.hero-fogos {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background-image:
-    radial-gradient(circle at 10% 20%, var(--rosa) 0 6px, transparent 7px),
-    radial-gradient(circle at 80% 15%, var(--girassol) 0 5px, transparent 6px),
-    radial-gradient(circle at 60% 30%, var(--coral) 0 4px, transparent 5px),
-    radial-gradient(circle at 30% 75%, var(--rosa) 0 5px, transparent 6px),
-    radial-gradient(circle at 90% 70%, var(--girassol) 0 4px, transparent 5px),
-    radial-gradient(circle at 15% 85%, var(--coral) 0 6px, transparent 7px);
-  opacity: 0.4;
   pointer-events: none;
+}
+
+.hero-fogos canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .hero::after {
@@ -94,12 +104,12 @@ h2,
   height: 80px;
   background: var(--creme);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
-  z-index: 2;
+  z-index: 1;
 }
 
 .hero-conteudo {
   position: relative;
-  z-index: 3;
+  z-index: 2;
   max-width: 640px;
   margin: 0 auto;
 }

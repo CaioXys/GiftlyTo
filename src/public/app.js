@@ -3,6 +3,8 @@ let dadosFesta = null;
 let categoriaAtiva = "todos";
 let presenteAtual = null;
 let posicaoScrollFundo = 0;
+let fogosCabecalho = null;
+let observadorHero = null;
 
 const NOMES_CATEGORIA = {
   casa: "Casa",
@@ -17,7 +19,141 @@ const NOMES_CATEGORIA = {
 document.addEventListener("DOMContentLoaded", () => {
   carregarPresentes();
   configurarModalContribuicao();
+  configurarFogosCabecalho();
 });
+
+function configurarFogosCabecalho() {
+  const hero = document.querySelector(".hero");
+  const containerFogos = document.getElementById("heroFogos");
+  const FireworksClass = window.Fireworks?.Fireworks || window.Fireworks;
+
+  if (!hero || !containerFogos || typeof FireworksClass !== "function") {
+    return;
+  }
+
+  fogosCabecalho = new FireworksClass(containerFogos, {
+    autoresize: true,
+    sound: { enabled: false },
+    ...obterConfiguracaoFogos(),
+  });
+
+  if (!("IntersectionObserver" in window)) {
+    reiniciarFogosCabecalho();
+    return;
+  }
+
+  observadorHero = new IntersectionObserver(
+    ([entry]) => {
+      if (entry.isIntersecting) {
+        reiniciarFogosCabecalho();
+      } else {
+        pararFogosCabecalho();
+      }
+    },
+    {
+      threshold: 0.2,
+    },
+  );
+
+  observadorHero.observe(hero);
+}
+
+function obterConfiguracaoFogos() {
+  const mobile =
+    window.matchMedia("(max-width: 768px)").matches || "ontouchstart" in window;
+
+  const poucaMemoria =
+    typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4;
+  const poucaCpu =
+    typeof navigator.hardwareConcurrency === "number" &&
+    navigator.hardwareConcurrency <= 4;
+
+  const modoLeve = mobile && (poucaMemoria || poucaCpu);
+
+  if (modoLeve) {
+    return {
+      opacity: 0.2,
+      particles: 16,
+      explosion: 7,
+      intensity: 9,
+      traceLength: 2,
+      traceSpeed: 8,
+      gravity: 1.1,
+      friction: 0.965,
+      acceleration: 1.02,
+      delay: { min: 42, max: 62 },
+      brightness: { min: 58, max: 86 },
+      decay: { min: 0.016, max: 0.027 },
+      rocketsPoint: { min: 12, max: 88 },
+      flickering: 28,
+      lineWidth: {
+        explosion: { min: 1.4, max: 2.8 },
+        trace: { min: 0.8, max: 1.2 },
+      },
+    };
+  }
+
+  if (mobile) {
+    return {
+      opacity: 0.22,
+      particles: 20,
+      explosion: 7,
+      intensity: 11,
+      traceLength: 2,
+      traceSpeed: 8,
+      gravity: 1.15,
+      friction: 0.962,
+      acceleration: 1.025,
+      delay: { min: 34, max: 54 },
+      brightness: { min: 58, max: 88 },
+      decay: { min: 0.016, max: 0.028 },
+      rocketsPoint: { min: 10, max: 90 },
+      flickering: 30,
+      lineWidth: {
+        explosion: { min: 1.4, max: 2.9 },
+        trace: { min: 0.8, max: 1.3 },
+      },
+    };
+  }
+
+  return {
+    opacity: 0.22,
+    particles: 26,
+    explosion: 6,
+    intensity: 16,
+    traceLength: 2,
+    traceSpeed: 9,
+    gravity: 1.2,
+    friction: 0.96,
+    acceleration: 1.03,
+    delay: { min: 22, max: 38 },
+    brightness: { min: 55, max: 85 },
+    decay: { min: 0.016, max: 0.028 },
+    rocketsPoint: { min: 8, max: 92 },
+    flickering: 35,
+    lineWidth: {
+      explosion: { min: 1.2, max: 2.6 },
+      trace: { min: 0.9, max: 1.4 },
+    },
+  };
+}
+
+function reiniciarFogosCabecalho() {
+  if (!fogosCabecalho) {
+    return;
+  }
+
+  fogosCabecalho.stop(true);
+  fogosCabecalho.start();
+}
+
+function pararFogosCabecalho() {
+  if (!fogosCabecalho) {
+    return;
+  }
+
+  fogosCabecalho.stop(true);
+}
 
 async function carregarPresentes() {
   try {
@@ -165,6 +301,12 @@ function configurarListaNomes() {
     <input type="text" class="input-nome" placeholder="Seu nome" />
   `;
 
+  lista.oninput = (e) => {
+    if (e.target?.classList?.contains("input-nome")) {
+      e.target.classList.remove("input-nome-erro");
+    }
+  };
+
   btnAdicionar.onclick = () => {
     const linha = document.createElement("div");
     linha.className = "linha-nome-extra";
@@ -173,6 +315,9 @@ function configurarListaNomes() {
     input.type = "text";
     input.className = "input-nome";
     input.placeholder = "Nome da outra pessoa";
+    input.addEventListener("input", () => {
+      input.classList.remove("input-nome-erro");
+    });
 
     const btnRemover = document.createElement("button");
     btnRemover.type = "button";
@@ -189,9 +334,22 @@ function configurarListaNomes() {
 
 function obterNomesPreenchidos() {
   const inputs = document.querySelectorAll("#listaNomes .input-nome");
-  return Array.from(inputs)
-    .map((input) => input.value.trim())
-    .filter((nome) => nome.length > 0);
+  const nomes = [];
+  let possuiCampoVazio = false;
+
+  Array.from(inputs).forEach((input) => {
+    const nome = input.value.trim();
+    if (!nome) {
+      possuiCampoVazio = true;
+      input.classList.add("input-nome-erro");
+      return;
+    }
+
+    input.classList.remove("input-nome-erro");
+    nomes.push(nome);
+  });
+
+  return possuiCampoVazio ? null : nomes;
 }
 
 function bloquearScrollFundo() {
@@ -246,8 +404,8 @@ function configurarModalContribuicao() {
     }
 
     const nomes = obterNomesPreenchidos();
-    if (nomes.length === 0) {
-      erro.textContent = "Informe ao menos um nome.";
+    if (!nomes) {
+      erro.textContent = "Preencha todos os nomes adicionados.";
       erro.hidden = false;
       return;
     }
@@ -300,9 +458,12 @@ function abrirModalContribuicao(presente) {
   document.getElementById("modalValorPresente").hidden = false;
   document.querySelector(".emoji-sucesso").textContent = "🎉";
   document.querySelector(".sucesso-titulo").textContent = "Combinado!";
-  document.querySelector(".sucesso-titulo").classList.remove("resultado-grande");
+  document
+    .querySelector(".sucesso-titulo")
+    .classList.remove("resultado-grande");
 
-  document.getElementById("modalPresenteNome").textContent = presente.nome || "";
+  document.getElementById("modalPresenteNome").textContent =
+    presente.nome || "";
 
   const valorTexto = presente.valorSugerido
     ? `Valor deste presente: ${formatarMoeda(presente.valorSugerido)} via Pix`
