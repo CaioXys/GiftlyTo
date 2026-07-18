@@ -8,7 +8,7 @@ import { MercadoPagoConfig, Order } from "mercadopago";
 const prisma = new PrismaClient();
 const app = express();
 const PORT = 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD; 
 
 const mpMode = String(process.env.MP_MODE || "live").toLowerCase();
 const mpAccessToken =
@@ -486,8 +486,7 @@ app.post("/api/admin/login", (req: Request, res: Response) => {
   }
 });
 
-app.get(
-  "/api/admin/presentes",
+app.get("/api/admin/presentes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     try {
@@ -523,8 +522,7 @@ function montarDadosPresente(corpo: CorpoPresenteAdmin) {
   };
 }
 
-app.post(
-  "/api/admin/presentes",
+app.post("/api/admin/presentes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const corpo = req.body as CorpoPresenteAdmin;
@@ -557,8 +555,7 @@ app.post(
   },
 );
 
-app.put(
-  "/api/admin/presentes/:id",
+app.put("/api/admin/presentes/:id",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -586,8 +583,7 @@ app.put(
   },
 );
 
-app.delete(
-  "/api/admin/presentes/:id",
+app.delete("/api/admin/presentes/:id",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -606,8 +602,7 @@ app.delete(
   },
 );
 
-app.get(
-  "/api/admin/contribuicoes",
+app.get("/api/admin/contribuicoes",
   checarSenhaAdmin,
   async (req: Request, res: Response) => {
     try {
