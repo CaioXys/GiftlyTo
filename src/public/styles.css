@@ -45,13 +45,6 @@ body.modal-aberto {
   overscroll-behavior: none;
 }
 
-h1, h2, .contagem-numero {
-  font-family: "Baloo 2", sans-serif;
-  
-}
-
-
-
 h1,
 h2,
 .filtro-btn,
