@@ -10,7 +10,7 @@ import swaggerUi from "swagger-ui-express";
 const prisma = new PrismaClient();
 const app = express();
 const PORT = 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD; // <-- troque essa senha como quiser
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD; 
 
 const mpMode = String(process.env.MP_MODE || "live").toLowerCase();
 const mpAccessToken =
