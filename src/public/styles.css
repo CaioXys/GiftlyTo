@@ -45,24 +45,17 @@ body.modal-aberto {
   overscroll-behavior: none;
 }
 
-.hero-titulo {
-  text-shadow: 0 0 0px #fff, 
-               0 0 10px #f5f2f5;
-}
-
 h1, h2, .contagem-numero {
   font-family: "Baloo 2", sans-serif;
   
 }
 
-.contagem-label {
-  text-shadow: 0 0 0px #fff, 
-               0 0 10px #f5f2f5;
-}
+
 
 h1,
 h2,
 .filtro-btn,
+.contagem-numero,
 .btn-confirmar {
   font-family: "Baloo 2", sans-serif;
 }
@@ -130,6 +123,8 @@ h2,
   font-weight: 800;
   line-height: 1.15;
   margin-bottom: 14px;
+  text-shadow: 0 0 0px #fff, 
+               0 0 10px #f5f2f5;
 }
 
 .hero-mensagem {
@@ -159,13 +154,16 @@ h2,
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--girassol);
+  text-shadow: 0 0 0px #fff, 
+               0 0 2px #f5f2f5;
 }
 
 .contagem-label {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.85;
+  text-shadow: 0 0 0px #fff, 
+               0 0 10px #f5f2f5;
 }
 
 /* ---------- Conteúdo / Filtros ---------- */
@@ -200,6 +198,7 @@ h2,
 
 .filtro-btn:hover {
   transform: translateY(-2px);
+  border: 2px solid var(--coral);
 }
 
 .filtro-btn.ativo {
@@ -228,7 +227,7 @@ h2,
 }
 
 .card-presente:hover {
-  transform: translateY(-4px);
+  transform: translateY(-4px) scale(1.05);
   box-shadow: 0 14px 32px rgba(27, 94, 99, 0.18);
 }
 
