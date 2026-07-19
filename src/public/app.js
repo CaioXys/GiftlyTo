@@ -493,12 +493,27 @@ function mostrarPix(dados) {
     : `Obrigado pelo carinho com o presente "${dados.nomePresente}"!`;
 
   const linkBtn = document.getElementById("linkAbrirPix");
+  const copiarBtn = document.getElementById("copiarPix")
   const qrContainer = document.getElementById("qrcodeContainer");
   qrContainer.innerHTML = "";
 
   if (dados.ticketUrl) {
     linkBtn.href = dados.ticketUrl;
     linkBtn.hidden = false;
+
+    if (dados.qrCode) {
+      copiarBtn.dataset.pixCode = dados.qrCode;
+      copiarBtn.hidden = false;
+    } else {
+      copiarBtn = true;
+    }
+
+    document.getElementById("copiarPix").addEventListener("click", async function () {
+    const codigo = this.dataset.pixCode;
+    if (!codigo) return;
+    await navigator.clipboard.writeText(codigo);
+    this.textContent = "Copiado!";
+    });
 
     if (dados.qrCodeBase64) {
       const img = document.createElement("img");
@@ -547,6 +562,7 @@ function exibirConfirmacaoPagamento() {
   ocultarCabecalhoModal();
   document.getElementById("qrcodeContainer").innerHTML = "";
   document.getElementById("linkAbrirPix").hidden = true;
+  document.getElementById("copiarPix").hidden = true;
   document.getElementById("sucessoTexto").textContent = "";
 
   const emoji = document.querySelector(".emoji-sucesso");
@@ -561,6 +577,7 @@ function exibirFalhaPagamento() {
   ocultarCabecalhoModal();
   document.getElementById("qrcodeContainer").innerHTML = "";
   document.getElementById("linkAbrirPix").hidden = true;
+  document.getElementById("copiarPix").hidden = true;
   document.getElementById("sucessoTexto").textContent = "";
 
   const emoji = document.querySelector(".emoji-sucesso");

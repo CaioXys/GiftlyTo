@@ -701,6 +701,13 @@ input:focus-visible {
   margin-bottom: 10px;
 }
 
+.btn-copiar-pix {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
 /* ---------- Responsivo ---------- */
 @media (max-width: 480px) {
   .hero {
