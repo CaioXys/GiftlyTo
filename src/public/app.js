@@ -96,7 +96,7 @@ function obterConfiguracaoFogos() {
   if (mobile) {
     return {
       opacity: 0.22,
-      particles: 20,
+      particles: 30,
       explosion: 7,
       intensity: 11,
       traceLength: 2,
@@ -107,7 +107,7 @@ function obterConfiguracaoFogos() {
       delay: { min: 34, max: 54 },
       brightness: { min: 58, max: 88 },
       decay: { min: 0.016, max: 0.028 },
-      rocketsPoint: { min: 10, max: 90 },
+      rocketsPoint: { min: 30, max: 70 },
       flickering: 30,
       lineWidth: {
         explosion: { min: 1.4, max: 2.9 },
@@ -118,7 +118,7 @@ function obterConfiguracaoFogos() {
 
   return {
     opacity: 0.22,
-    particles: 26,
+    particles: 120,
     explosion: 6,
     intensity: 16,
     traceLength: 2,

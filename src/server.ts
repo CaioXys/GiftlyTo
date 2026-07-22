@@ -10,7 +10,19 @@ import swaggerUi from "swagger-ui-express";
 const prisma = new PrismaClient();
 const app = express();
 const PORT = 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD; 
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+function slugify(texto: string): string {
+  return texto
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
 
 const mpMode = String(process.env.MP_MODE || "live").toLowerCase();
 const mpAccessToken =
@@ -49,10 +61,6 @@ app.use(
   ),
 );
 
-// Painel admin — só fica acessível se ADMIN_PANEL_PATH estiver definida
-// no .env. É uma URL secreta (ex: "painel-b60b1afce25122c9"), não
-// linkada em nenhum lugar do site público. Gere a sua com:
-// node -e "console.log(require('crypto').randomBytes(12).toString('hex'))"
 const ADMIN_PANEL_PATH = String(process.env.ADMIN_PANEL_PATH || "").trim();
 if (!ADMIN_PANEL_PATH) {
   console.warn(
@@ -74,9 +82,9 @@ const swaggerSpec = swaggerJsdoc({
   definition: {
     openapi: "3.0.3",
     info: {
-      title: "MyGift API",
+      title: "GiftlyTo API",
       version: "1.1.0",
-      description: "Documentação dos endpoints do MyGift.",
+      description: "Documentação dos endpoints do GiftlyTo.",
     },
     servers: [{ url: `http://localhost:${PORT}` }],
     components: {
@@ -339,8 +347,7 @@ app.get("/api-docs.json", (_req: Request, res: Response) => {
   res.json(swaggerSpec);
 });
 
-app.get("/api-docs", swaggerUi.setup(swaggerSpec));
-app.use("/api-docs", swaggerUi.serve);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // --- Tipos auxiliares ---
 
@@ -417,6 +424,7 @@ async function buscarDadosCompletos(nomeAtual: string | null) {
     festa: party
       ? {
           nomeAniversariante: party.honoreeName,
+          slug: slugify(party.honoreeName),
           idade: party.age,
           dataFesta: party.partyDate.toISOString().split("T")[0],
           mensagem: party.message || "",
@@ -923,6 +931,20 @@ app.get(
         .status(500)
         .json({ erro: "Não foi possível carregar as contribuições." });
     }
+  },
+);
+
+app.get("/:honoreeName", async (req: Request, res: Response, next: NextFunction) => {
+    if (req.params.honoreeName.includes(".")) return next();
+ 
+    const party = await prisma.party.findFirst();
+    const slugEsperado = party ? slugify(party.honoreeName) : null;
+ 
+    if (slugEsperado && req.params.honoreeName !== slugEsperado) {
+      return res.redirect(301, `/${slugEsperado}`);
+    }
+ 
+    res.sendFile(path.join(__dirname, "..", "src", "public", "index.html"));
   },
 );
 
