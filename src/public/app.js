@@ -492,42 +492,34 @@ function mostrarPix(dados) {
     ? `Faça um Pix de ${formatarMoeda(dados.valorSugerido)} para o presente "${dados.nomePresente}".`
     : `Obrigado pelo carinho com o presente "${dados.nomePresente}"!`;
 
-  const linkBtn = document.getElementById("linkAbrirPix");
   const copiarBtn = document.getElementById("copiarPix")
   const qrContainer = document.getElementById("qrcodeContainer");
   qrContainer.innerHTML = "";
 
-  if (dados.ticketUrl) {
-    linkBtn.href = dados.ticketUrl;
-    linkBtn.hidden = false;
+  if (dados.qrCode) {
+    copiarBtn.dataset.pixCode = dados.qrCode;
+    copiarBtn.hidden = false;
+  } else {
+    copiarBtn.hidden = true;
+  }
 
-    if (dados.qrCode) {
-      copiarBtn.dataset.pixCode = dados.qrCode;
-      copiarBtn.hidden = false;
-    } else {
-      copiarBtn = true;
-    }
-
-    document.getElementById("copiarPix").addEventListener("click", async function () {
+  copiarBtn.addEventListener("click", async function () {
     const codigo = this.dataset.pixCode;
     if (!codigo) return;
     await navigator.clipboard.writeText(codigo);
     this.textContent = "Copiado!";
-    });
+  });
 
-    if (dados.qrCodeBase64) {
-      const img = document.createElement("img");
-      img.alt = "QR Code do Pix";
-      img.src = `data:image/png;base64,${dados.qrCodeBase64}`;
-      qrContainer.appendChild(img);
-    } else if (dados.qrCode) {
-      const qr = qrcode(0, "M");
-      qr.addData(dados.qrCode);
-      qr.make();
-      qrContainer.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 });
-    }
-  } else {
-    linkBtn.hidden = true;
+  if (dados.qrCodeBase64) {
+    const img = document.createElement("img");
+    img.alt = "QR Code do Pix";
+    img.src = `data:image/png;base64,${dados.qrCodeBase64}`;
+    qrContainer.appendChild(img);
+  } else if (dados.qrCode) {
+    const qr = qrcode(0, "M");
+    qr.addData(dados.qrCode);
+    qr.make();
+    qrContainer.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 });
   }
 
   if (dados.paymentId) {
@@ -561,7 +553,6 @@ function monitorarPagamento(paymentId) {
 function exibirConfirmacaoPagamento() {
   ocultarCabecalhoModal();
   document.getElementById("qrcodeContainer").innerHTML = "";
-  document.getElementById("linkAbrirPix").hidden = true;
   document.getElementById("copiarPix").hidden = true;
   document.getElementById("sucessoTexto").textContent = "";
 
@@ -576,7 +567,6 @@ function exibirConfirmacaoPagamento() {
 function exibirFalhaPagamento() {
   ocultarCabecalhoModal();
   document.getElementById("qrcodeContainer").innerHTML = "";
-  document.getElementById("linkAbrirPix").hidden = true;
   document.getElementById("copiarPix").hidden = true;
   document.getElementById("sucessoTexto").textContent = "";
 
