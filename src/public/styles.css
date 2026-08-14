@@ -687,13 +687,6 @@ input:focus-visible {
   display: block;
 }
 
-.btn-abrir-pix {
-  display: block;
-  text-align: center;
-  text-decoration: none;
-  margin-bottom: 10px;
-}
-
 .btn-copiar-pix {
   display: block;
   text-align: center;
