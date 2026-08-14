@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
-import { PrismaClient, Gift, Contribution } from "@prisma/client";
+import { PrismaClient, Gift, Contribution, Contributor } from "@prisma/client";
 import { randomUUID, createHmac } from "crypto";
 import { MercadoPagoConfig, Order } from "mercadopago";
 import swaggerJsdoc from "swagger-jsdoc";
@@ -254,7 +254,6 @@ const swaggerSpec = swaggerJsdoc({
                     nome: { type: "string" },
                     descricao: { type: "string" },
                     categoria: { type: "string" },
-                    imagem: { type: "string" },
                     valorSugerido: {
                       oneOf: [{ type: "string" }, { type: "number" }],
                     },
@@ -293,7 +292,6 @@ const swaggerSpec = swaggerJsdoc({
                     nome: { type: "string" },
                     descricao: { type: "string" },
                     categoria: { type: "string" },
-                    imagem: { type: "string" },
                     valorSugerido: {
                       oneOf: [{ type: "string" }, { type: "number" }],
                     },
@@ -351,14 +349,15 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // --- Tipos auxiliares ---
 
-type GiftComContribuicoes = Gift & { contributions: Contribution[] };
+type GiftComContribuicoes = Gift & {
+  contributions: (Contribution & { contributors: Contributor[] })[];
+};
 
 interface PresenteFormatado {
   id: string;
   nome: string;
   descricao: string | null;
   categoria: string;
-  imagem: string;
   valorSugerido: number | null;
   totalArrecadado: number;
   totalContribuicoes: number;
@@ -392,9 +391,9 @@ function formatarPresente(
     ? contributions.filter(
         (c) =>
           c.status === "pago" &&
-          Array.isArray(c.names) &&
-          c.names.some(
-            (nome) => nome.toLowerCase() === nomeAtual.toLowerCase(),
+          c.contributors.some(
+            (contributor) =>
+              contributor.name.toLowerCase() === nomeAtual.toLowerCase(),
           ),
       )
     : [];
@@ -404,7 +403,6 @@ function formatarPresente(
     nome: gift.name,
     descricao: gift.description,
     categoria: gift.category,
-    imagem: gift.image || "",
     valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
     totalArrecadado,
     totalContribuicoes: contribuicoesPagas.length,
@@ -416,7 +414,7 @@ function formatarPresente(
 async function buscarDadosCompletos(nomeAtual: string | null) {
   const party = await prisma.party.findFirst();
   const gifts = await prisma.gift.findMany({
-    include: { contributions: true },
+    include: { contributions: { include: { contributors: true } } },
     orderBy: { id: "asc" },
   });
 
@@ -629,7 +627,9 @@ app.post(
       await prisma.contribution.create({
         data: {
           giftId: Number(id),
-          names: listaNomes,
+          contributors: {
+            create: listaNomes.map((nome) => ({ name: nome })),
+          },
           email: mpPayerEmail,
           mpPaymentId: order.id ? String(order.id) : null,
           message: mensagem ? String(mensagem).trim() : null,
@@ -713,14 +713,15 @@ app.get(
       const contribuicoes = await prisma.contribution.findMany({
         where: { giftId: Number(id) },
         orderBy: { createdAt: "asc" },
-        include: { gift: true },
+        include: { gift: true, contributors: true },
       });
 
       const nomeNormalizado = nomeAtual.toLowerCase();
-      const minhasContribuicoes = contribuicoes.filter(
-        (c) =>
-          Array.isArray(c.names) &&
-          c.names.some((nome) => nome.toLowerCase() === nomeNormalizado),
+      const minhasContribuicoes = contribuicoes.filter((c) =>
+        c.contributors.some(
+          (contributor) =>
+            contributor.name.toLowerCase() === nomeNormalizado,
+        ),
       );
 
       res.json({
@@ -801,7 +802,6 @@ interface CorpoPresenteAdmin {
   nome?: string;
   descricao?: string;
   categoria?: string;
-  imagem?: string;
   valorSugerido?: string | number;
 }
 
@@ -810,7 +810,6 @@ function montarDadosPresente(corpo: CorpoPresenteAdmin) {
     name: String(corpo.nome).trim(),
     description: corpo.descricao ? String(corpo.descricao).trim() : null,
     category: corpo.categoria ? String(corpo.categoria).trim() : "outro",
-    image: corpo.imagem ? String(corpo.imagem).trim() : "",
     suggestedValue:
       corpo.valorSugerido !== undefined &&
       corpo.valorSugerido !== null &&
@@ -909,7 +908,7 @@ app.get(
   async (req: Request, res: Response) => {
     try {
       const contribuicoes = await prisma.contribution.findMany({
-        include: { gift: true },
+        include: { gift: true, contributors: true },
         orderBy: { createdAt: "desc" },
       });
 
@@ -917,7 +916,7 @@ app.get(
         contribuicoes: contribuicoes.map((c) => ({
           id: c.id,
           presente: c.gift.name,
-          nomes: c.names,
+          nomes: c.contributors.map((contributor) => contributor.name),
           payerId: c.email,
           paymentId: c.mpPaymentId,
           status: c.status,

@@ -6,7 +6,6 @@ interface PresenteAdmin {
   nome: string;
   descricao: string | null;
   categoria: string;
-  imagem: string;
   valorSugerido: number | null;
   totalArrecadado: number;
   totalContribuicoes: number;
@@ -41,7 +40,6 @@ interface CorpoPresenteForm {
   descricao: string;
   categoria: string;
   valorSugerido: string;
-  imagem: string;
 }
 
 const NOMES_CATEGORIA: Record<string, string> = {
@@ -187,7 +185,6 @@ function abrirModalEdicao(presente: PresenteAdmin): void {
   el<HTMLSelectElement>("campoCategoria").value = presente.categoria || "outro";
   el<HTMLInputElement>("campoValor").value =
     presente.valorSugerido !== null ? String(presente.valorSugerido) : "";
-  el<HTMLInputElement>("campoImagem").value = presente.imagem || "";
   el("erroForm").hidden = true;
   modal.hidden = false;
 }
@@ -206,7 +203,6 @@ form.addEventListener("submit", async (e) => {
     descricao: el<HTMLTextAreaElement>("campoDescricao").value.trim(),
     categoria: el<HTMLSelectElement>("campoCategoria").value,
     valorSugerido: el<HTMLInputElement>("campoValor").value,
-    imagem: el<HTMLInputElement>("campoImagem").value.trim(),
   };
 
   try {
