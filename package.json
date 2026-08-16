@@ -22,7 +22,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fireworks-js": "^2.10.8",
-    "mercadopago": "^3.2.0",
+    "mercadopago": "^3.4.0",
     "qrcode-generator": "^2.0.4",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1"
