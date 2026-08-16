@@ -3,9 +3,9 @@ const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
 
 async function main() {
-  const festaExistente = await prisma.party.findFirst()
+  const existingParty = await prisma.party.findFirst()
 
-  let party = festaExistente
+  let party = existingParty
   if (!party) {
     party = await prisma.party.create({
       data: {
@@ -21,9 +21,9 @@ async function main() {
     console.log('ℹ️ Já existe uma festa cadastrada, mantendo como está.')
   }
 
-  const presentesExistentes = await prisma.gift.count()
+  const existingGifts = await prisma.gift.count()
 
-  if (presentesExistentes === 0) {
+  if (existingGifts === 0) {
     await prisma.gift.createMany({
       data: [
         {

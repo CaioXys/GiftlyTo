@@ -12,8 +12,8 @@ const app = express()
 const PORT = 3000
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD
 
-function slugify(texto: string): string {
-  return texto
+function slugify(text: string): string {
+  return text
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
@@ -345,11 +345,11 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // --- Tipos auxiliares ---
 
-type GiftComContribuicoes = Gift & {
+type GiftWithContributions = Gift & {
   contributions: (Contribution & { contributors: Contributor[] })[]
 }
 
-interface PresenteFormatado {
+interface FormattedGift {
   id: string
   nome: string
   descricao: string | null
@@ -361,12 +361,12 @@ interface PresenteFormatado {
   minhasContribuicoesValor: number
 }
 
-interface ErroMercadoPago {
+interface MercadoPagoError {
   status: number
   erro: string
 }
 
-interface ErroMercadoPagoApi {
+interface MercadoPagoApiError {
   errors?: Array<{ message?: string }>
   data?: {
     transactions?: {
@@ -380,28 +380,28 @@ interface ErroMercadoPagoApi {
 
 // --- Helpers ---
 
-function formatarPresente(
-  gift: GiftComContribuicoes,
-  nomeAtual: string | null,
-): PresenteFormatado {
+function formatGift(
+  gift: GiftWithContributions,
+  currentName: string | null,
+): FormattedGift {
   const contributions = gift.contributions || []
 
-  const valorPresente = gift.suggestedValue ? Number(gift.suggestedValue) : 0
-  const contribuicoesPagas = contributions.filter((c) => c.status === 'pago')
-  const totalArrecadado = contributions.reduce(
-    (soma, c) => (c.status === 'pago' ? soma + valorPresente : soma),
+  const giftValue = gift.suggestedValue ? Number(gift.suggestedValue) : 0
+  const paidContributions = contributions.filter((c) => c.status === 'pago')
+  const totalRaised = contributions.reduce(
+    (sum, c) => (c.status === 'pago' ? sum + giftValue : sum),
     0,
   )
 
   // Filtra só as contribuições PAGAS da pessoa vendo a página agora —
   // é isso que alimenta o banner "1x enviado / 2x enviado".
-  const minhasContribuicoes = nomeAtual
+  const myContributions = currentName
     ? contributions.filter(
         (c) =>
           c.status === 'pago' &&
           c.contributors.some(
             (contributor) =>
-              contributor.name.toLowerCase() === nomeAtual.toLowerCase(),
+              contributor.name.toLowerCase() === currentName.toLowerCase(),
           ),
       )
     : []
@@ -412,14 +412,14 @@ function formatarPresente(
     descricao: gift.description,
     categoria: gift.category,
     valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
-    totalArrecadado,
-    totalContribuicoes: contribuicoesPagas.length,
-    minhasContribuicoes: minhasContribuicoes.length,
-    minhasContribuicoesValor: minhasContribuicoes.length * valorPresente,
+    totalArrecadado: totalRaised,
+    totalContribuicoes: paidContributions.length,
+    minhasContribuicoes: myContributions.length,
+    minhasContribuicoesValor: myContributions.length * giftValue,
   }
 }
 
-async function buscarDadosCompletos(nomeAtual: string | null) {
+async function fetchAllData(currentName: string | null) {
   const party = await prisma.party.findFirst()
   const gifts = await prisma.gift.findMany({
     include: { contributions: { include: { contributors: true } } },
@@ -436,11 +436,11 @@ async function buscarDadosCompletos(nomeAtual: string | null) {
           mensagem: party.message || '',
         }
       : null,
-    presentes: gifts.map((g) => formatarPresente(g, nomeAtual)),
+    presentes: gifts.map((g) => formatGift(g, currentName)),
   }
 }
 
-function montarErroMercadoPago(err: ErroMercadoPagoApi): ErroMercadoPago {
+function buildMercadoPagoError(err: MercadoPagoApiError): MercadoPagoError {
   // Formato de erro da API de Orders: a order é criada com sucesso,
   // mas a transação em si falha. Vem como { errors: [...], data: {...} }.
   if (Array.isArray(err?.errors) && err.errors.length > 0) {
@@ -454,31 +454,31 @@ function montarErroMercadoPago(err: ErroMercadoPagoApi): ErroMercadoPago {
       }
     }
 
-    const mensagens = err.errors
+    const messages = err.errors
       .map((e) => String(e?.message || ''))
       .filter(Boolean)
       .join(' | ')
 
     return {
       status: 400,
-      erro: mensagens
-        ? `O Mercado Pago rejeitou o pagamento: ${mensagens}`
+      erro: messages
+        ? `O Mercado Pago rejeitou o pagamento: ${messages}`
         : 'O Mercado Pago rejeitou o pagamento.',
     }
   }
 
-  const detalhes = Array.isArray(err?.cause) ? err.cause : []
-  const mensagemErro = String(err?.message || '')
-  const descricaoDetalhes = detalhes
-    .map((item) => String(item?.description || item?.message || ''))
+  const details = Array.isArray(err?.cause) ? err.cause : []
+  const errorMessage = String(err?.message || '')
+  const detailsDescription = details
+    .map((detail) => String(detail?.description || detail?.message || ''))
     .filter(Boolean)
     .join(' | ')
 
   const liveCredentialsError =
     err?.status === 401 &&
-    (mensagemErro.includes('Unauthorized use of live credentials') ||
-      detalhes.some((item) =>
-        String(item?.description || '').includes(
+    (errorMessage.includes('Unauthorized use of live credentials') ||
+      details.some((detail) =>
+        String(detail?.description || '').includes(
           'Unauthorized use of live credentials',
         ),
       ))
@@ -490,12 +490,12 @@ function montarErroMercadoPago(err: ErroMercadoPagoApi): ErroMercadoPago {
     }
   }
 
-  if (mensagemErro || descricaoDetalhes) {
+  if (errorMessage || detailsDescription) {
     return {
       status: 400,
-      erro: descricaoDetalhes
-        ? `O Mercado Pago rejeitou os dados enviados: ${descricaoDetalhes}`
-        : `O Mercado Pago rejeitou os dados enviados: ${mensagemErro}`,
+      erro: detailsDescription
+        ? `O Mercado Pago rejeitou os dados enviados: ${detailsDescription}`
+        : `O Mercado Pago rejeitou os dados enviados: ${errorMessage}`,
     }
   }
 
@@ -505,7 +505,7 @@ function montarErroMercadoPago(err: ErroMercadoPagoApi): ErroMercadoPago {
   }
 }
 
-function validarAssinaturaWebhook(req: Request): boolean {
+function validateWebhookSignature(req: Request): boolean {
   const secret = process.env.MP_WEBHOOK_SECRET
   if (!secret) {
     console.warn(
@@ -520,31 +520,31 @@ function validarAssinaturaWebhook(req: Request): boolean {
 
   if (!xSignature || !dataId) return false
 
-  const partes = xSignature
+  const parts = xSignature
     .split(',')
-    .reduce<Record<string, string>>((acc, parte) => {
-      const [chave, valor] = parte.split('=')
-      if (chave && valor) acc[chave.trim()] = valor.trim()
+    .reduce<Record<string, string>>((acc, part) => {
+      const [key, value] = part.split('=')
+      if (key && value) acc[key.trim()] = value.trim()
       return acc
     }, {})
 
-  const ts = partes.ts
-  const v1 = partes.v1
+  const ts = parts.ts
+  const v1 = parts.v1
   if (!ts || !v1) return false
 
   const manifest = `id:${dataId.toLowerCase()};request-id:${xRequestId || ''};ts:${ts};`
-  const assinaturaCalculada = createHmac('sha256', secret)
+  const calculatedSignature = createHmac('sha256', secret)
     .update(manifest)
     .digest('hex')
 
-  return assinaturaCalculada === v1
+  return calculatedSignature === v1
 }
 
-function statusInternoParaStatus(
-  statusMp: string,
+function mapMercadoPagoStatus(
+  mpStatus: string,
 ): 'pago' | 'falhou' | 'pendente' {
-  if (statusMp === 'processed') return 'pago'
-  if (['canceled', 'failed', 'expired', 'refunded'].includes(statusMp)) {
+  if (mpStatus === 'processed') return 'pago'
+  if (['canceled', 'failed', 'expired', 'refunded'].includes(mpStatus)) {
     return 'falhou'
   }
   return 'pendente'
@@ -554,9 +554,9 @@ function statusInternoParaStatus(
 
 app.get('/api/presentes', async (req: Request, res: Response) => {
   try {
-    const nomeAtual = req.query.nome ? String(req.query.nome) : null
-    const dados = await buscarDadosCompletos(nomeAtual)
-    res.json(dados)
+    const currentName = req.query.nome ? String(req.query.nome) : null
+    const data = await fetchAllData(currentName)
+    res.json(data)
   } catch (err) {
     console.error(err)
     res.status(500).json({ erro: 'Não foi possível carregar os presentes.' })
@@ -572,14 +572,14 @@ app.post(
       mensagem?: string
     }
 
-    const listaNomes = Array.isArray(nomes)
+    const namesList = Array.isArray(nomes)
       ? nomes.map((n) => String(n).trim())
       : []
-    if (listaNomes.length === 0) {
+    if (namesList.length === 0) {
       return res.status(400).json({ erro: 'Informe ao menos um nome.' })
     }
 
-    if (listaNomes.some((nome) => nome.length === 0)) {
+    if (namesList.some((name) => name.length === 0)) {
       return res
         .status(400)
         .json({ erro: 'Preencha todos os nomes adicionados.' })
@@ -604,22 +604,22 @@ app.post(
           .json({ erro: 'O Mercado Pago não está configurado no servidor.' })
       }
 
-      const valor = Number(gift.suggestedValue).toFixed(2)
+      const value = Number(gift.suggestedValue).toFixed(2)
 
       const order = await mercadoPagoOrder.create({
         body: {
           type: 'online',
           processing_mode: 'automatic',
-          total_amount: valor,
+          total_amount: value,
           external_reference: `gift-${gift.id}-${Date.now()}`,
           payer: {
             email: mpPayerEmail,
-            first_name: mpMode === 'test' ? 'APRO' : listaNomes[0],
+            first_name: mpMode === 'test' ? 'APRO' : namesList[0],
           },
           transactions: {
             payments: [
               {
-                amount: valor,
+                amount: value,
                 payment_method: { id: 'pix', type: 'bank_transfer' },
               },
             ],
@@ -629,13 +629,13 @@ app.post(
         requestOptions: { idempotencyKey: randomUUID() },
       })
 
-      const metodoPagamento = order.transactions?.payments?.[0]?.payment_method
+      const paymentMethod = order.transactions?.payments?.[0]?.payment_method
 
       await prisma.contribution.create({
         data: {
           giftId: Number(id),
           contributors: {
-            create: listaNomes.map((nome) => ({ name: nome })),
+            create: namesList.map((name) => ({ name })),
           },
           email: mpPayerEmail,
           mpPaymentId: order.id ? String(order.id) : null,
@@ -647,16 +647,16 @@ app.post(
       res.json({
         sucesso: true,
         paymentId: order.id ? String(order.id) : '',
-        qrCode: metodoPagamento?.qr_code || '',
-        qrCodeBase64: metodoPagamento?.qr_code_base64 || '',
-        ticketUrl: metodoPagamento?.ticket_url || '',
+        qrCode: paymentMethod?.qr_code || '',
+        qrCodeBase64: paymentMethod?.qr_code_base64 || '',
+        ticketUrl: paymentMethod?.ticket_url || '',
         valorSugerido: gift.suggestedValue ? Number(gift.suggestedValue) : null,
         nomePresente: gift.name,
       })
     } catch (err) {
       console.error(err)
-      const mpErro = montarErroMercadoPago(err as ErroMercadoPagoApi)
-      res.status(mpErro.status).json({ erro: mpErro.erro })
+      const mpError = buildMercadoPagoError(err as MercadoPagoApiError)
+      res.status(mpError.status).json({ erro: mpError.erro })
     }
   },
 )
@@ -667,15 +667,15 @@ app.post('/api/webhooks/mercadopago', async (req: Request, res: Response) => {
   res.sendStatus(200)
 
   try {
-    const tipo =
+    const type =
       req.query.type || (req.body as { type?: string } | undefined)?.type
     const orderId =
       (req.query['data.id'] as string) ||
       (req.body as { data?: { id?: string } } | undefined)?.data?.id
 
-    if (tipo !== 'order' || !orderId) return
+    if (type !== 'order' || !orderId) return
 
-    if (!validarAssinaturaWebhook(req)) {
+    if (!validateWebhookSignature(req)) {
       console.warn('Webhook com assinatura inválida, ignorando:', orderId)
       return
     }
@@ -683,24 +683,24 @@ app.post('/api/webhooks/mercadopago', async (req: Request, res: Response) => {
     if (!mercadoPagoOrder) return
 
     const order = await mercadoPagoOrder.get({ id: orderId })
-    const statusInterno = statusInternoParaStatus(order.status ?? '')
+    const internalStatus = mapMercadoPagoStatus(order.status ?? '')
 
-    const contribuicao = await prisma.contribution.findFirst({
+    const contribution = await prisma.contribution.findFirst({
       where: { mpPaymentId: String(orderId) },
     })
 
-    if (!contribuicao) {
+    if (!contribution) {
       console.warn('Webhook recebido para order não encontrada:', orderId)
       return
     }
 
-    if (contribuicao.status !== statusInterno) {
+    if (contribution.status !== internalStatus) {
       await prisma.contribution.update({
-        where: { id: contribuicao.id },
-        data: { status: statusInterno },
+        where: { id: contribution.id },
+        data: { status: internalStatus },
       })
       console.log(
-        `Contribuição ${contribuicao.id} atualizada: ${contribuicao.status} → ${statusInterno}`,
+        `Contribuição ${contribution.id} atualizada: ${contribution.status} → ${internalStatus}`,
       )
     }
   } catch (err) {
@@ -712,28 +712,28 @@ app.get(
   '/api/presentes/:id/minhas-contribuicoes',
   async (req: Request, res: Response) => {
     const { id } = req.params
-    const nomeAtual = req.query.nome ? String(req.query.nome) : null
+    const currentName = req.query.nome ? String(req.query.nome) : null
 
-    if (!nomeAtual) {
+    if (!currentName) {
       return res.status(400).json({ erro: 'Informe o nome para consultar.' })
     }
 
     try {
-      const contribuicoes = await prisma.contribution.findMany({
+      const contributions = await prisma.contribution.findMany({
         where: { giftId: Number(id) },
         orderBy: { createdAt: 'asc' },
         include: { gift: true, contributors: true },
       })
 
-      const nomeNormalizado = nomeAtual.toLowerCase()
-      const minhasContribuicoes = contribuicoes.filter((c) =>
+      const normalizedName = currentName.toLowerCase()
+      const myContributions = contributions.filter((c) =>
         c.contributors.some(
-          (contributor) => contributor.name.toLowerCase() === nomeNormalizado,
+          (contributor) => contributor.name.toLowerCase() === normalizedName,
         ),
       )
 
       res.json({
-        contribuicoes: minhasContribuicoes.map((c) => ({
+        contribuicoes: myContributions.map((c) => ({
           id: c.id,
           valor: c.gift.suggestedValue ? Number(c.gift.suggestedValue) : 0,
           status: c.status,
@@ -758,14 +758,14 @@ app.get(
   async (req: Request, res: Response) => {
     const paymentId = String(req.params.paymentId)
     try {
-      const contribuicao = await prisma.contribution.findFirst({
+      const contribution = await prisma.contribution.findFirst({
         where: { mpPaymentId: paymentId },
         select: { status: true },
       })
-      if (!contribuicao) {
+      if (!contribution) {
         return res.status(404).json({ erro: 'Contribuição não encontrada.' })
       }
-      res.json({ status: contribuicao.status })
+      res.json({ status: contribution.status })
     } catch (err) {
       console.error(err)
       res.status(500).json({ erro: 'Não foi possível consultar o status.' })
@@ -775,9 +775,9 @@ app.get(
 
 // --- Rotas administrativas ---
 
-function checarSenhaAdmin(req: Request, res: Response, next: NextFunction) {
-  const senha = req.headers['x-admin-password']
-  if (senha !== ADMIN_PASSWORD) {
+function checkAdminPassword(req: Request, res: Response, next: NextFunction) {
+  const password = req.headers['x-admin-password']
+  if (password !== ADMIN_PASSWORD) {
     return res.status(401).json({ erro: 'Senha incorreta.' })
   }
   next()
@@ -794,11 +794,11 @@ app.post('/api/admin/login', (req: Request, res: Response) => {
 
 app.get(
   '/api/admin/presentes',
-  checarSenhaAdmin,
+  checkAdminPassword,
   async (req: Request, res: Response) => {
     try {
-      const dados = await buscarDadosCompletos(null)
-      res.json(dados)
+      const data = await fetchAllData(null)
+      res.json(data)
     } catch (err) {
       console.error(err)
       res.status(500).json({ erro: 'Não foi possível carregar os presentes.' })
@@ -806,34 +806,34 @@ app.get(
   },
 )
 
-interface CorpoPresenteAdmin {
+interface AdminGiftBody {
   nome?: string
   descricao?: string
   categoria?: string
   valorSugerido?: string | number
 }
 
-function montarDadosPresente(corpo: CorpoPresenteAdmin) {
+function buildGiftData(body: AdminGiftBody) {
   return {
-    name: String(corpo.nome).trim(),
-    description: corpo.descricao ? String(corpo.descricao).trim() : null,
-    category: corpo.categoria ? String(corpo.categoria).trim() : 'outro',
+    name: String(body.nome).trim(),
+    description: body.descricao ? String(body.descricao).trim() : null,
+    category: body.categoria ? String(body.categoria).trim() : 'outro',
     suggestedValue:
-      corpo.valorSugerido !== undefined &&
-      corpo.valorSugerido !== null &&
-      corpo.valorSugerido !== ''
-        ? Number(corpo.valorSugerido)
+      body.valorSugerido !== undefined &&
+      body.valorSugerido !== null &&
+      body.valorSugerido !== ''
+        ? Number(body.valorSugerido)
         : null,
   }
 }
 
 app.post(
   '/api/admin/presentes',
-  checarSenhaAdmin,
+  checkAdminPassword,
   async (req: Request, res: Response) => {
-    const corpo = req.body as CorpoPresenteAdmin
+    const body = req.body as AdminGiftBody
 
-    if (!corpo.nome || String(corpo.nome).trim().length === 0) {
+    if (!body.nome || String(body.nome).trim().length === 0) {
       return res.status(400).json({ erro: 'O nome do presente é obrigatório.' })
     }
 
@@ -847,7 +847,7 @@ app.post(
 
       const gift = await prisma.gift.create({
         data: {
-          ...montarDadosPresente(corpo),
+          ...buildGiftData(body),
           party: { connect: { id: party.id } },
         },
       })
@@ -861,19 +861,19 @@ app.post(
 
 app.put(
   '/api/admin/presentes/:id',
-  checarSenhaAdmin,
+  checkAdminPassword,
   async (req: Request, res: Response) => {
     const { id } = req.params
-    const corpo = req.body as CorpoPresenteAdmin
+    const body = req.body as AdminGiftBody
 
-    if (!corpo.nome || String(corpo.nome).trim().length === 0) {
+    if (!body.nome || String(body.nome).trim().length === 0) {
       return res.status(400).json({ erro: 'O nome do presente é obrigatório.' })
     }
 
     try {
       await prisma.gift.update({
         where: { id: Number(id) },
-        data: montarDadosPresente(corpo),
+        data: buildGiftData(body),
       })
       res.json({ sucesso: true })
     } catch (err: unknown) {
@@ -888,7 +888,7 @@ app.put(
 
 app.delete(
   '/api/admin/presentes/:id',
-  checarSenhaAdmin,
+  checkAdminPassword,
   async (req: Request, res: Response) => {
     const { id } = req.params
 
@@ -908,16 +908,16 @@ app.delete(
 
 app.get(
   '/api/admin/contribuicoes',
-  checarSenhaAdmin,
+  checkAdminPassword,
   async (req: Request, res: Response) => {
     try {
-      const contribuicoes = await prisma.contribution.findMany({
+      const contributions = await prisma.contribution.findMany({
         include: { gift: true, contributors: true },
         orderBy: { createdAt: 'desc' },
       })
 
       res.json({
-        contribuicoes: contribuicoes.map((c) => ({
+        contribuicoes: contributions.map((c) => ({
           id: c.id,
           presente: c.gift.name,
           nomes: c.contributors.map((contributor) => contributor.name),
@@ -943,10 +943,10 @@ app.get(
     if (req.params.honoreeName.includes('.')) return next()
 
     const party = await prisma.party.findFirst()
-    const slugEsperado = party ? slugify(party.honoreeName) : null
+    const expectedSlug = party ? slugify(party.honoreeName) : null
 
-    if (slugEsperado && req.params.honoreeName !== slugEsperado) {
-      return res.redirect(301, `/${slugEsperado}`)
+    if (expectedSlug && req.params.honoreeName !== expectedSlug) {
+      return res.redirect(301, `/${expectedSlug}`)
     }
 
     res.sendFile(path.join(__dirname, '..', 'src', 'public', 'index.html'))
