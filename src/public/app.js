@@ -1,74 +1,74 @@
 // ---------- Estado global ----------
-let dadosFesta = null;
-let categoriaAtiva = "todos";
-let presenteAtual = null;
-let posicaoScrollFundo = 0;
-let fogosCabecalho = null;
-let observadorHero = null;
+let dadosFesta = null
+let categoriaAtiva = 'todos'
+let presenteAtual = null
+let posicaoScrollFundo = 0
+let fogosCabecalho = null
+let observadorHero = null
 
 const NOMES_CATEGORIA = {
-  casa: "Casa",
-  experiencia: "Experiência",
-  hobby: "Hobby",
-  pix: "Pix",
-  viagem: "Viagem",
-  outro: "Outro",
-};
+  casa: 'Casa',
+  experiencia: 'Experiência',
+  hobby: 'Hobby',
+  pix: 'Pix',
+  viagem: 'Viagem',
+  outro: 'Outro',
+}
 
 // ---------- Inicialização ----------
-document.addEventListener("DOMContentLoaded", () => {
-  carregarPresentes();
-  configurarModalContribuicao();
-  configurarFogosCabecalho();
-});
+document.addEventListener('DOMContentLoaded', () => {
+  carregarPresentes()
+  configurarModalContribuicao()
+  configurarFogosCabecalho()
+})
 
 function configurarFogosCabecalho() {
-  const hero = document.querySelector(".hero");
-  const containerFogos = document.getElementById("heroFogos");
-  const FireworksClass = window.Fireworks?.Fireworks || window.Fireworks;
+  const hero = document.querySelector('.hero')
+  const containerFogos = document.getElementById('heroFogos')
+  const FireworksClass = window.Fireworks?.Fireworks || window.Fireworks
 
-  if (!hero || !containerFogos || typeof FireworksClass !== "function") {
-    return;
+  if (!hero || !containerFogos || typeof FireworksClass !== 'function') {
+    return
   }
 
   fogosCabecalho = new FireworksClass(containerFogos, {
     autoresize: true,
     sound: { enabled: false },
     ...obterConfiguracaoFogos(),
-  });
+  })
 
-  if (!("IntersectionObserver" in window)) {
-    reiniciarFogosCabecalho();
-    return;
+  if (!('IntersectionObserver' in window)) {
+    reiniciarFogosCabecalho()
+    return
   }
 
   observadorHero = new IntersectionObserver(
     ([entry]) => {
       if (entry.isIntersecting) {
-        reiniciarFogosCabecalho();
+        reiniciarFogosCabecalho()
       } else {
-        pararFogosCabecalho();
+        pararFogosCabecalho()
       }
     },
     {
       threshold: 0.2,
     },
-  );
+  )
 
-  observadorHero.observe(hero);
+  observadorHero.observe(hero)
 }
 
 function obterConfiguracaoFogos() {
   const mobile =
-    window.matchMedia("(max-width: 768px)").matches || "ontouchstart" in window;
+    window.matchMedia('(max-width: 768px)').matches || 'ontouchstart' in window
 
   const poucaMemoria =
-    typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4;
+    typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4
   const poucaCpu =
-    typeof navigator.hardwareConcurrency === "number" &&
-    navigator.hardwareConcurrency <= 4;
+    typeof navigator.hardwareConcurrency === 'number' &&
+    navigator.hardwareConcurrency <= 4
 
-  const modoLeve = mobile && (poucaMemoria || poucaCpu);
+  const modoLeve = mobile && (poucaMemoria || poucaCpu)
 
   if (modoLeve) {
     return {
@@ -90,7 +90,7 @@ function obterConfiguracaoFogos() {
         explosion: { min: 1.4, max: 2.8 },
         trace: { min: 0.8, max: 1.2 },
       },
-    };
+    }
   }
 
   if (mobile) {
@@ -113,7 +113,7 @@ function obterConfiguracaoFogos() {
         explosion: { min: 1.4, max: 2.9 },
         trace: { min: 0.8, max: 1.3 },
       },
-    };
+    }
   }
 
   return {
@@ -135,451 +135,447 @@ function obterConfiguracaoFogos() {
       explosion: { min: 1.2, max: 2.6 },
       trace: { min: 0.9, max: 1.4 },
     },
-  };
+  }
 }
 
 function reiniciarFogosCabecalho() {
   if (!fogosCabecalho) {
-    return;
+    return
   }
 
-  fogosCabecalho.stop(true);
-  fogosCabecalho.start();
+  fogosCabecalho.stop(true)
+  fogosCabecalho.start()
 }
 
 function pararFogosCabecalho() {
   if (!fogosCabecalho) {
-    return;
+    return
   }
 
-  fogosCabecalho.stop(true);
+  fogosCabecalho.stop(true)
 }
 
 async function carregarPresentes() {
   try {
-    const resposta = await fetch("/api/presentes");
-    if (!resposta.ok) throw new Error("Falha ao buscar dados");
-    dadosFesta = await resposta.json();
+    const resposta = await fetch('/api/presentes')
+    if (!resposta.ok) throw new Error('Falha ao buscar dados')
+    dadosFesta = await resposta.json()
 
-    preencherHero(dadosFesta.festa);
-    iniciarContagem(dadosFesta.festa.dataFesta);
-    montarFiltros(dadosFesta.presentes);
-    renderizarPresentes();
+    preencherHero(dadosFesta.festa)
+    iniciarContagem(dadosFesta.festa.dataFesta)
+    montarFiltros(dadosFesta.presentes)
+    renderizarPresentes()
   } catch (erro) {
-    console.error(erro);
-    document.getElementById("tituloFesta").textContent =
-      "Não foi possível carregar a lista 😕";
+    console.error(erro)
+    document.getElementById('tituloFesta').textContent =
+      'Não foi possível carregar a lista 😕'
   }
 }
 
 // ---------- Hero ----------
 function preencherHero(festa) {
-  document.getElementById("tituloFesta").textContent =
-    `${festa.idade} anos de ${festa.nomeAniversariante}`;
-  document.getElementById("mensagemFesta").textContent = festa.mensagem || "";
+  document.getElementById('tituloFesta').textContent =
+    `${festa.idade} anos de ${festa.nomeAniversariante}`
+  document.getElementById('mensagemFesta').textContent = festa.mensagem || ''
 }
 
 function iniciarContagem(dataFestaStr) {
-  const dataFesta = new Date(dataFestaStr + "T19:00:00");
+  const dataFesta = new Date(dataFestaStr + 'T19:00:00')
 
   function atualizar() {
-    const agora = new Date();
-    const diff = dataFesta - agora;
+    const agora = new Date()
+    const diff = dataFesta - agora
 
     if (diff <= 0) {
-      document.getElementById("contagem").innerHTML =
-        '<p style="font-weight:600;">🎉 A FESTA CHEGOU! 🎉</p>';
-      clearInterval(intervalo);
-      return;
+      document.getElementById('contagem').innerHTML =
+        '<p style="font-weight:600;">🎉 A FESTA CHEGOU! 🎉</p>'
+      clearInterval(intervalo)
+      return
     }
 
-    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutos = Math.floor((diff / (1000 * 60)) % 60);
-    const segundos = Math.floor((diff / 1000) % 60);
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24))
+    const horas = Math.floor((diff / (1000 * 60 * 60)) % 24)
+    const minutos = Math.floor((diff / (1000 * 60)) % 60)
+    const segundos = Math.floor((diff / 1000) % 60)
 
-    document.getElementById("dias").textContent = dias;
-    document.getElementById("horas").textContent = horas;
-    document.getElementById("minutos").textContent = minutos;
-    document.getElementById("segundos").textContent = segundos;
+    document.getElementById('dias').textContent = dias
+    document.getElementById('horas').textContent = horas
+    document.getElementById('minutos').textContent = minutos
+    document.getElementById('segundos').textContent = segundos
   }
 
-  atualizar();
-  const intervalo = setInterval(atualizar, 1000);
+  atualizar()
+  const intervalo = setInterval(atualizar, 1000)
 }
 
 // ---------- Filtros ----------
 function montarFiltros(presentes) {
-  const categorias = [...new Set(presentes.map((p) => p.categoria))];
-  const container = document.getElementById("filtros");
+  const categorias = [...new Set(presentes.map((p) => p.categoria))]
+  const container = document.getElementById('filtros')
 
   categorias.forEach((cat) => {
-    const btn = document.createElement("button");
-    btn.className = "filtro-btn";
-    btn.dataset.categoria = cat;
-    btn.textContent = NOMES_CATEGORIA[cat] || cat;
-    container.appendChild(btn);
-  });
+    const btn = document.createElement('button')
+    btn.className = 'filtro-btn'
+    btn.dataset.categoria = cat
+    btn.textContent = NOMES_CATEGORIA[cat] || cat
+    container.appendChild(btn)
+  })
 
-  container.addEventListener("click", (e) => {
-    const btn = e.target.closest(".filtro-btn");
-    if (!btn) return;
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filtro-btn')
+    if (!btn) return
 
     document
-      .querySelectorAll(".filtro-btn")
-      .forEach((b) => b.classList.remove("ativo"));
-    btn.classList.add("ativo");
-    categoriaAtiva = btn.dataset.categoria;
-    renderizarPresentes();
-  });
+      .querySelectorAll('.filtro-btn')
+      .forEach((b) => b.classList.remove('ativo'))
+    btn.classList.add('ativo')
+    categoriaAtiva = btn.dataset.categoria
+    renderizarPresentes()
+  })
 }
 
 // ---------- Renderização dos cards ----------
 function renderizarPresentes() {
-  const grid = document.getElementById("gridPresentes");
-  const estadoVazio = document.getElementById("estadoVazio");
-  grid.innerHTML = "";
+  const grid = document.getElementById('gridPresentes')
+  const estadoVazio = document.getElementById('estadoVazio')
+  grid.innerHTML = ''
 
   const lista = dadosFesta.presentes.filter(
-    (p) => categoriaAtiva === "todos" || p.categoria === categoriaAtiva,
-  );
+    (p) => categoriaAtiva === 'todos' || p.categoria === categoriaAtiva,
+  )
 
   if (lista.length === 0) {
-    estadoVazio.hidden = false;
-    return;
+    estadoVazio.hidden = false
+    return
   }
-  estadoVazio.hidden = true;
+  estadoVazio.hidden = true
 
   lista.forEach((presente) => {
-    grid.appendChild(criarCard(presente));
-  });
+    grid.appendChild(criarCard(presente))
+  })
 }
 
 function formatarMoeda(valor) {
-  return Number(valor).toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  });
+  return Number(valor).toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+  })
 }
 
 function criarCard(presente) {
-  const card = document.createElement("article");
-  card.className = "card-presente";
+  const card = document.createElement('article')
+  card.className = 'card-presente'
 
   card.innerHTML = `
     <div class="card-fita cat-${presente.categoria}"></div>
     <div class="card-corpo">
       <span class="card-categoria">${NOMES_CATEGORIA[presente.categoria] || presente.categoria}</span>
       <h3 class="card-nome">${escapeHTML(presente.nome)}</h3>
-      <p class="card-descricao">${escapeHTML(presente.descricao || "")}</p>
-      ${presente.valorSugerido ? `<p class="card-preco">${formatarMoeda(presente.valorSugerido)} via Pix</p>` : ""}
+      <p class="card-descricao">${escapeHTML(presente.descricao || '')}</p>
+      ${presente.valorSugerido ? `<p class="card-preco">${formatarMoeda(presente.valorSugerido)} via Pix</p>` : ''}
       <button class="btn-reservar" data-id="${presente.id}">
         Quero dar esse presente
       </button>
     </div>
-  `;
+  `
 
-  const btn = card.querySelector(".btn-reservar");
-  btn.addEventListener("click", () => abrirModalContribuicao(presente));
+  const btn = card.querySelector('.btn-reservar')
+  btn.addEventListener('click', () => abrirModalContribuicao(presente))
 
-  return card;
+  return card
 }
 
 function escapeHTML(texto) {
-  const div = document.createElement("div");
-  div.textContent = texto;
-  return div.innerHTML;
+  const div = document.createElement('div')
+  div.textContent = texto
+  return div.innerHTML
 }
 
 // ---------- Campo dinâmico de nomes (botão "+") ----------
 function configurarListaNomes() {
-  const lista = document.getElementById("listaNomes");
-  const btnAdicionar = document.getElementById("btnAdicionarNome");
+  const lista = document.getElementById('listaNomes')
+  const btnAdicionar = document.getElementById('btnAdicionarNome')
 
   // Reseta para 1 campo só, toda vez que o modal abre
   lista.innerHTML = `
     <input type="text" class="input-nome" placeholder="Seu nome" />
-  `;
+  `
 
   lista.oninput = (e) => {
-    if (e.target?.classList?.contains("input-nome")) {
-      e.target.classList.remove("input-nome-erro");
+    if (e.target?.classList?.contains('input-nome')) {
+      e.target.classList.remove('input-nome-erro')
     }
-  };
+  }
 
   btnAdicionar.onclick = () => {
-    const linha = document.createElement("div");
-    linha.className = "linha-nome-extra";
+    const linha = document.createElement('div')
+    linha.className = 'linha-nome-extra'
 
-    const input = document.createElement("input");
-    input.type = "text";
-    input.className = "input-nome";
-    input.placeholder = "Nome da outra pessoa";
-    input.addEventListener("input", () => {
-      input.classList.remove("input-nome-erro");
-    });
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.className = 'input-nome'
+    input.placeholder = 'Nome da outra pessoa'
+    input.addEventListener('input', () => {
+      input.classList.remove('input-nome-erro')
+    })
 
-    const btnRemover = document.createElement("button");
-    btnRemover.type = "button";
-    btnRemover.className = "btn-remover-nome";
-    btnRemover.innerHTML = "×";
-    btnRemover.setAttribute("aria-label", "Remover");
-    btnRemover.onclick = () => linha.remove();
+    const btnRemover = document.createElement('button')
+    btnRemover.type = 'button'
+    btnRemover.className = 'btn-remover-nome'
+    btnRemover.innerHTML = '×'
+    btnRemover.setAttribute('aria-label', 'Remover')
+    btnRemover.onclick = () => linha.remove()
 
-    linha.appendChild(input);
-    linha.appendChild(btnRemover);
-    lista.appendChild(linha);
-  };
+    linha.appendChild(input)
+    linha.appendChild(btnRemover)
+    lista.appendChild(linha)
+  }
 }
 
 function obterNomesPreenchidos() {
-  const inputs = document.querySelectorAll("#listaNomes .input-nome");
-  const nomes = [];
-  let possuiCampoVazio = false;
+  const inputs = document.querySelectorAll('#listaNomes .input-nome')
+  const nomes = []
+  let possuiCampoVazio = false
 
   Array.from(inputs).forEach((input) => {
-    const nome = input.value.trim();
+    const nome = input.value.trim()
     if (!nome) {
-      possuiCampoVazio = true;
-      input.classList.add("input-nome-erro");
-      return;
+      possuiCampoVazio = true
+      input.classList.add('input-nome-erro')
+      return
     }
 
-    input.classList.remove("input-nome-erro");
-    nomes.push(nome);
-  });
+    input.classList.remove('input-nome-erro')
+    nomes.push(nome)
+  })
 
-  return possuiCampoVazio ? null : nomes;
+  return possuiCampoVazio ? null : nomes
 }
 
 function bloquearScrollFundo() {
-  posicaoScrollFundo =
-    window.scrollY || document.documentElement.scrollTop || 0;
-  document.body.classList.add("modal-aberto");
-  document.body.style.position = "fixed";
-  document.body.style.top = `-${posicaoScrollFundo}px`;
-  document.body.style.left = "0";
-  document.body.style.right = "0";
-  document.body.style.width = "100%";
+  posicaoScrollFundo = window.scrollY || document.documentElement.scrollTop || 0
+  document.body.classList.add('modal-aberto')
+  document.body.style.position = 'fixed'
+  document.body.style.top = `-${posicaoScrollFundo}px`
+  document.body.style.left = '0'
+  document.body.style.right = '0'
+  document.body.style.width = '100%'
 }
 
 function desbloquearScrollFundo() {
-  document.body.classList.remove("modal-aberto");
-  document.body.style.position = "";
-  document.body.style.top = "";
-  document.body.style.left = "";
-  document.body.style.right = "";
-  document.body.style.width = "";
-  window.scrollTo(0, posicaoScrollFundo);
+  document.body.classList.remove('modal-aberto')
+  document.body.style.position = ''
+  document.body.style.top = ''
+  document.body.style.left = ''
+  document.body.style.right = ''
+  document.body.style.width = ''
+  window.scrollTo(0, posicaoScrollFundo)
 }
 
 // ---------- Modal de contribuição ----------
 function configurarModalContribuicao() {
-  const modal = document.getElementById("modalReserva");
-  const fechar = document.getElementById("modalFechar");
-  const btnConfirmar = document.getElementById("btnConfirmarReserva");
-  const btnFecharSucesso = document.getElementById("btnFecharSucesso");
+  const modal = document.getElementById('modalReserva')
+  const fechar = document.getElementById('modalFechar')
+  const btnConfirmar = document.getElementById('btnConfirmarReserva')
+  const btnFecharSucesso = document.getElementById('btnFecharSucesso')
 
-  fechar.addEventListener("click", () => {
-    fecharModalContribuicao();
-    presenteAtual = null;
-  });
+  fechar.addEventListener('click', () => {
+    fecharModalContribuicao()
+    presenteAtual = null
+  })
 
-  modal.addEventListener("click", (e) => {
+  modal.addEventListener('click', (e) => {
     if (e.target === modal) {
-      fecharModalContribuicao();
-      presenteAtual = null;
+      fecharModalContribuicao()
+      presenteAtual = null
     }
-  });
+  })
 
-  btnConfirmar.addEventListener("click", async () => {
-    const erro = document.getElementById("erroForm");
-    erro.hidden = true;
+  btnConfirmar.addEventListener('click', async () => {
+    const erro = document.getElementById('erroForm')
+    erro.hidden = true
 
     if (!presenteAtual) {
       erro.textContent =
-        "Não identificamos o presente. Feche e tente novamente.";
-      erro.hidden = false;
-      return;
+        'Não identificamos o presente. Feche e tente novamente.'
+      erro.hidden = false
+      return
     }
 
-    const nomes = obterNomesPreenchidos();
+    const nomes = obterNomesPreenchidos()
     if (!nomes) {
-      erro.textContent = "Preencha todos os nomes adicionados.";
-      erro.hidden = false;
-      return;
+      erro.textContent = 'Preencha todos os nomes adicionados.'
+      erro.hidden = false
+      return
     }
 
-    const mensagem = document.getElementById("inputMensagem").value.trim();
+    const mensagem = document.getElementById('inputMensagem').value.trim()
 
-    btnConfirmar.disabled = true;
-    btnConfirmar.textContent = "Confirmando...";
+    btnConfirmar.disabled = true
+    btnConfirmar.textContent = 'Confirmando...'
 
     try {
       const resposta = await fetch(
         `/api/presentes/${presenteAtual.id}/contribuir`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nomes, mensagem }),
         },
-      );
+      )
 
-      const dados = await resposta.json();
+      const dados = await resposta.json()
 
       if (!resposta.ok) {
-        erro.textContent = dados.erro || "Algo deu errado. Tente de novo.";
-        erro.hidden = false;
-        return;
+        erro.textContent = dados.erro || 'Algo deu errado. Tente de novo.'
+        erro.hidden = false
+        return
       }
 
-      mostrarPix(dados);
-    } catch (err) {
-      erro.textContent = "Não foi possível conectar ao servidor.";
-      erro.hidden = false;
+      mostrarPix(dados)
+    } catch {
+      erro.textContent = 'Não foi possível conectar ao servidor.'
+      erro.hidden = false
     } finally {
-      btnConfirmar.disabled = false;
-      btnConfirmar.textContent = "Confirmar e gerar Pix";
+      btnConfirmar.disabled = false
+      btnConfirmar.textContent = 'Confirmar e gerar Pix'
     }
-  });
+  })
 
-  btnFecharSucesso.addEventListener("click", () => {
-    fecharModalContribuicao();
-    presenteAtual = null;
-  });
+  btnFecharSucesso.addEventListener('click', () => {
+    fecharModalContribuicao()
+    presenteAtual = null
+  })
 }
 
 function abrirModalContribuicao(presente) {
-  presenteAtual = presente;
-  bloquearScrollFundo();
+  presenteAtual = presente
+  bloquearScrollFundo()
 
-  document.getElementById("modalTitulo").hidden = false;
-  document.getElementById("modalPresenteNome").hidden = false;
-  document.getElementById("modalValorPresente").hidden = false;
-  document.querySelector(".emoji-sucesso").textContent = "🎉";
-  document.querySelector(".sucesso-titulo").textContent = "Combinado!";
-  document
-    .querySelector(".sucesso-titulo")
-    .classList.remove("resultado-grande");
+  document.getElementById('modalTitulo').hidden = false
+  document.getElementById('modalPresenteNome').hidden = false
+  document.getElementById('modalValorPresente').hidden = false
+  document.querySelector('.emoji-sucesso').textContent = '🎉'
+  document.querySelector('.sucesso-titulo').textContent = 'Combinado!'
+  document.querySelector('.sucesso-titulo').classList.remove('resultado-grande')
 
-  document.getElementById("modalPresenteNome").textContent =
-    presente.nome || "";
+  document.getElementById('modalPresenteNome').textContent = presente.nome || ''
 
   const valorTexto = presente.valorSugerido
     ? `Valor deste presente: ${formatarMoeda(presente.valorSugerido)} via Pix`
-    : "";
-  document.getElementById("modalValorPresente").textContent = valorTexto;
+    : ''
+  document.getElementById('modalValorPresente').textContent = valorTexto
 
-  document.getElementById("inputMensagem").value = "";
-  configurarListaNomes();
+  document.getElementById('inputMensagem').value = ''
+  configurarListaNomes()
 
-  document.getElementById("formReserva").hidden = false;
-  document.getElementById("modalSucesso").hidden = true;
-  document.getElementById("erroForm").hidden = true;
-  document.getElementById("modalReserva").hidden = false;
+  document.getElementById('formReserva').hidden = false
+  document.getElementById('modalSucesso').hidden = true
+  document.getElementById('erroForm').hidden = true
+  document.getElementById('modalReserva').hidden = false
 }
 
 function fecharModalContribuicao() {
-  document.getElementById("modalReserva").hidden = true;
-  desbloquearScrollFundo();
+  document.getElementById('modalReserva').hidden = true
+  desbloquearScrollFundo()
 }
 
 function mostrarPix(dados) {
-  document.getElementById("formReserva").hidden = true;
-  document.getElementById("modalSucesso").hidden = false;
+  document.getElementById('formReserva').hidden = true
+  document.getElementById('modalSucesso').hidden = false
 
-  document.getElementById("sucessoTexto").textContent = dados.valorSugerido
+  document.getElementById('sucessoTexto').textContent = dados.valorSugerido
     ? `Faça um Pix de ${formatarMoeda(dados.valorSugerido)} para o presente "${dados.nomePresente}".`
-    : `Obrigado pelo carinho com o presente "${dados.nomePresente}"!`;
+    : `Obrigado pelo carinho com o presente "${dados.nomePresente}"!`
 
-  const copiarBtn = document.getElementById("copiarPix")
-  const qrContainer = document.getElementById("qrcodeContainer");
-  qrContainer.innerHTML = "";
+  const copiarBtn = document.getElementById('copiarPix')
+  const qrContainer = document.getElementById('qrcodeContainer')
+  qrContainer.innerHTML = ''
 
   if (dados.qrCode) {
-    copiarBtn.dataset.pixCode = dados.qrCode;
-    copiarBtn.hidden = false;
+    copiarBtn.dataset.pixCode = dados.qrCode
+    copiarBtn.hidden = false
   } else {
-    copiarBtn.hidden = true;
+    copiarBtn.hidden = true
   }
 
-  copiarBtn.addEventListener("click", async function () {
-    const codigo = this.dataset.pixCode;
-    if (!codigo) return;
-    await navigator.clipboard.writeText(codigo);
-    this.textContent = "Copiado!";
-  });
+  copiarBtn.addEventListener('click', async function () {
+    const codigo = this.dataset.pixCode
+    if (!codigo) return
+    await navigator.clipboard.writeText(codigo)
+    this.textContent = 'Copiado!'
+  })
 
   if (dados.qrCodeBase64) {
-    const img = document.createElement("img");
-    img.alt = "QR Code do Pix";
-    img.src = `data:image/png;base64,${dados.qrCodeBase64}`;
-    qrContainer.appendChild(img);
+    const img = document.createElement('img')
+    img.alt = 'QR Code do Pix'
+    img.src = `data:image/png;base64,${dados.qrCodeBase64}`
+    qrContainer.appendChild(img)
   } else if (dados.qrCode) {
-    const qr = qrcode(0, "M");
-    qr.addData(dados.qrCode);
-    qr.make();
-    qrContainer.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 });
+    const qr = qrcode(0, 'M')
+    qr.addData(dados.qrCode)
+    qr.make()
+    qrContainer.innerHTML = qr.createSvgTag({ cellSize: 5, margin: 4 })
   }
 
   if (dados.paymentId) {
-    monitorarPagamento(dados.paymentId);
+    monitorarPagamento(dados.paymentId)
   }
 }
 
 function monitorarPagamento(paymentId) {
   const intervalo = setInterval(async () => {
     try {
-      const resposta = await fetch(`/api/contribuicoes/${paymentId}/status`);
-      if (!resposta.ok) return;
+      const resposta = await fetch(`/api/contribuicoes/${paymentId}/status`)
+      if (!resposta.ok) return
 
-      const { status } = await resposta.json();
+      const { status } = await resposta.json()
 
-      if (status === "pago") {
-        clearInterval(intervalo);
-        exibirConfirmacaoPagamento();
-      } else if (status === "falhou") {
-        clearInterval(intervalo);
-        exibirFalhaPagamento();
+      if (status === 'pago') {
+        clearInterval(intervalo)
+        exibirConfirmacaoPagamento()
+      } else if (status === 'falhou') {
+        clearInterval(intervalo)
+        exibirFalhaPagamento()
       }
     } catch (err) {
-      console.error("Erro ao checar status do pagamento:", err);
+      console.error('Erro ao checar status do pagamento:', err)
     }
-  }, 4000);
+  }, 4000)
 
-  setTimeout(() => clearInterval(intervalo), 10 * 60 * 1000);
+  setTimeout(() => clearInterval(intervalo), 10 * 60 * 1000)
 }
 
 function exibirConfirmacaoPagamento() {
-  ocultarCabecalhoModal();
-  document.getElementById("qrcodeContainer").innerHTML = "";
-  document.getElementById("copiarPix").hidden = true;
-  document.getElementById("sucessoTexto").textContent = "";
+  ocultarCabecalhoModal()
+  document.getElementById('qrcodeContainer').innerHTML = ''
+  document.getElementById('copiarPix').hidden = true
+  document.getElementById('sucessoTexto').textContent = ''
 
-  const emoji = document.querySelector(".emoji-sucesso");
-  const titulo = document.querySelector(".sucesso-titulo");
+  const emoji = document.querySelector('.emoji-sucesso')
+  const titulo = document.querySelector('.sucesso-titulo')
 
-  emoji.textContent = "✅";
-  titulo.textContent = "Concluído!";
-  titulo.classList.add("resultado-grande");
+  emoji.textContent = '✅'
+  titulo.textContent = 'Concluído!'
+  titulo.classList.add('resultado-grande')
 }
 
 function exibirFalhaPagamento() {
-  ocultarCabecalhoModal();
-  document.getElementById("qrcodeContainer").innerHTML = "";
-  document.getElementById("copiarPix").hidden = true;
-  document.getElementById("sucessoTexto").textContent = "";
+  ocultarCabecalhoModal()
+  document.getElementById('qrcodeContainer').innerHTML = ''
+  document.getElementById('copiarPix').hidden = true
+  document.getElementById('sucessoTexto').textContent = ''
 
-  const emoji = document.querySelector(".emoji-sucesso");
-  const titulo = document.querySelector(".sucesso-titulo");
+  const emoji = document.querySelector('.emoji-sucesso')
+  const titulo = document.querySelector('.sucesso-titulo')
 
-  emoji.textContent = "❌";
-  titulo.textContent = "Recusado";
-  titulo.classList.add("resultado-grande");
+  emoji.textContent = '❌'
+  titulo.textContent = 'Recusado'
+  titulo.classList.add('resultado-grande')
 }
 
 function ocultarCabecalhoModal() {
-  document.getElementById("modalTitulo").hidden = true;
-  document.getElementById("modalPresenteNome").hidden = true;
-  document.getElementById("modalValorPresente").hidden = true;
+  document.getElementById('modalTitulo').hidden = true
+  document.getElementById('modalPresenteNome').hidden = true
+  document.getElementById('modalValorPresente').hidden = true
 }
