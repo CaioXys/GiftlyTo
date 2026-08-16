@@ -33,7 +33,7 @@ html {
 }
 
 body {
-  font-family: "Inter", sans-serif;
+  font-family: 'Inter', sans-serif;
   background: var(--creme);
   color: var(--texto);
   min-height: 100dvh;
@@ -65,7 +65,7 @@ h2,
 .filtro-btn,
 .contagem-numero,
 .btn-confirmar {
-  font-family: "Baloo 2", sans-serif;
+  font-family: 'Baloo 2', sans-serif;
 }
 
 /* ---------- Hero ---------- */
@@ -96,7 +96,7 @@ h2,
 }
 
 .hero::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -40px;
   left: 50%;
@@ -131,8 +131,9 @@ h2,
   font-weight: 800;
   line-height: 1.15;
   margin-bottom: 14px;
-  text-shadow: 0 0 0px #fff, 
-               0 0 10px #f5f2f5;
+  text-shadow:
+    0 0 0px #fff,
+    0 0 10px #f5f2f5;
 }
 
 .hero-mensagem {
@@ -162,16 +163,18 @@ h2,
   font-size: 1.8rem;
   font-weight: 700;
   color: var(--girassol);
-  text-shadow: 0 0 0px #fff, 
-               0 0 2px #f5f2f5;
+  text-shadow:
+    0 0 0px #fff,
+    0 0 2px #f5f2f5;
 }
 
 .contagem-label {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  text-shadow: 0 0 0px #fff, 
-               0 0 10px #f5f2f5;
+  text-shadow:
+    0 0 0px #fff,
+    0 0 10px #f5f2f5;
 }
 
 /* ---------- Conteúdo / Filtros ---------- */
@@ -307,7 +310,7 @@ h2,
   border: none;
   padding: 12px 16px;
   border-radius: 12px;
-  font-family: "Baloo 2", sans-serif;
+  font-family: 'Baloo 2', sans-serif;
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -400,7 +403,7 @@ h2,
 }
 
 .mapa-container::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background-image: var(--mapa-bg-url);
@@ -430,7 +433,7 @@ h2,
   border: none;
   padding: 14px 24px;
   border-radius: 999px;
-  font-family: "Baloo 2", sans-serif;
+  font-family: 'Baloo 2', sans-serif;
   font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
@@ -578,7 +581,7 @@ h2,
 }
 
 .sucesso-titulo {
-  font-family: "Baloo 2", sans-serif;
+  font-family: 'Baloo 2', sans-serif;
   font-size: 1.3rem;
   font-weight: 700;
   color: var(--petroleo);
@@ -700,13 +703,6 @@ input:focus-visible {
   max-width: 220px;
   height: auto;
   display: block;
-}
-
-.btn-abrir-pix {
-  display: block;
-  text-align: center;
-  text-decoration: none;
-  margin-bottom: 10px;
 }
 
 .btn-copiar-pix {

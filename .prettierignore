@@ -1,0 +1,5 @@
+node_modules/
+dist/
+src/admin-panel/dist/
+package-lock.json
+src/public/qrcode.js

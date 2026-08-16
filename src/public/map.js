@@ -1,69 +1,71 @@
 // Coordenadas do local da festa — troque pelas coordenadas reais quando souber
-const LOCAL_FESTA = {
+const PARTY_LOCATION = {
   lat: -23.5009016394939,
   lng: -46.18040001475659,
-  nome: "Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP, 08775-420",
-};
+  label:
+    'Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP, 08775-420',
+}
 
-let chaveApiCache = null;
+let apiKeyCache = null
 
 // Mostra a imagem estática (capa desfocada) sem gastar a cota do mapa interativo
-async function mostrarCapaMapa() {
+async function showMapCover() {
   try {
-    const resposta = await fetch('/api/config');
-    const config = await resposta.json();
-    chaveApiCache = config.mapApiKey;
+    const response = await fetch('/api/config')
+    const config = await response.json()
+    apiKeyCache = config.mapApiKey
 
-    if (!chaveApiCache) {
-      console.error('Chave do Google Maps não configurada no servidor.');
-      return;
+    if (!apiKeyCache) {
+      console.error('Chave do Google Maps não configurada no servidor.')
+      return
     }
 
-    const img = document.getElementById('mapaCapa');
-    img.src = "../assets/images/mapa-capa.png"
-    
-  } catch (erro) {
-    console.error('Não foi possível carregar a capa do mapa:', erro);
+    const img = document.getElementById('mapaCapa')
+    img.src = '../assets/images/mapa-capa.png'
+  } catch (error) {
+    console.error('Não foi possível carregar a capa do mapa:', error)
   }
 }
 
 // Só carrega o mapa interativo de verdade quando a pessoa clica
-async function carregarMapaInterativo() {
-  if (!chaveApiCache) return;
+async function loadInteractiveMap() {
+  if (!apiKeyCache) return
 
-  document.getElementById('mapaCapa').hidden = true;
-  document.getElementById('btnVerMapa').hidden = true;
-  document.getElementById('mapaFesta').hidden = false;
+  document.getElementById('mapaCapa').hidden = true
+  document.getElementById('btnVerMapa').hidden = true
+  document.getElementById('mapaFesta').hidden = false
 
-  const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${chaveApiCache}&callback=initMapaFesta`;
-  script.async = true;
-  document.head.appendChild(script);
+  const script = document.createElement('script')
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKeyCache}&callback=initPartyMap`
+  script.async = true
+  document.head.appendChild(script)
 }
 
-function initMapaFesta() {
-  const elementoMapa = document.getElementById("mapaFesta");
+function initPartyMap() {
+  const mapElement = document.getElementById('mapaFesta')
 
-  const mapa = new google.maps.Map(elementoMapa, {
-    center: LOCAL_FESTA,
+  const map = new google.maps.Map(mapElement, {
+    center: PARTY_LOCATION,
     zoom: 16,
-  });
+  })
 
   new google.maps.Marker({
-    position: LOCAL_FESTA,
-    map: mapa,
-    title: LOCAL_FESTA.nome,
-  });
+    position: PARTY_LOCATION,
+    map,
+    title: PARTY_LOCATION.label,
+  })
 
   // Força o mapa a recalcular seu tamanho corretamente,
   // já que ele foi criado dentro de um container que estava "hidden" até o clique.
-  google.maps.event.trigger(mapa, 'resize');
-  mapa.setCenter(LOCAL_FESTA); // o resize pode descentralizar o mapa, então recentraliza
+  google.maps.event.trigger(map, 'resize')
+  map.setCenter(PARTY_LOCATION) // o resize pode descentralizar o mapa, então recentraliza
 }
 
-window.initMapaFesta = initMapaFesta;
+window.initPartyMap = initPartyMap
 
 document.addEventListener('DOMContentLoaded', () => {
-  mostrarCapaMapa();
-  document.getElementById('btnVerMapa').addEventListener('click', carregarMapaInterativo);
-});
+  showMapCover()
+  document
+    .getElementById('btnVerMapa')
+    .addEventListener('click', loadInteractiveMap)
+})
