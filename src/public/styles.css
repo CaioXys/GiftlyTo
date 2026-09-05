@@ -6,6 +6,7 @@
   --petroleo: #1b5e63;
   --petroleo-claro: #2d7a80;
   --verde: #74f320;
+  --verde-btn: #8adb41;
   --roxo: #30004d;
   --girassol: #ffc857;
   --rosa: #ff8fa3;
@@ -15,6 +16,7 @@
   --texto: #2a2a2a;
   --texto-suave: #6b6b6b;
   --sombra: 0 8px 24px rgba(27, 94, 99, 0.12);
+  --sombra-forte: 2px 2px 10px 0px rgba(0, 0, 0, 0.3);
   --raio: 20px;
 }
 
@@ -33,11 +35,19 @@ html {
 }
 
 body {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge antiga */
+  user-select: none;
   font-family: 'Inter', sans-serif;
   background: var(--creme);
   color: var(--texto);
   min-height: 100dvh;
   overflow-x: hidden;
+}
+
+.selecionavel {
+  user-select: text;
 }
 
 body.modal-aberto {
@@ -119,6 +129,21 @@ h2,
   text-shadow:
     0 0 0px #fff,
     0 0 10px #f5f2f5;
+}
+
+.hero-nome,
+.hero-idade {
+  display: block;
+  margin: 0;
+}
+
+.hero-nome {
+  font-size: 2em;
+}
+
+.hero-idade {
+  font-size: 1.25em;
+  margin-top: -16px;
 }
 
 .hero-mensagem {
@@ -205,14 +230,16 @@ h2,
 /* ---------- Grid de presentes ---------- */
 .grid-presentes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 328px));
   gap: 24px;
+  justify-content: center;
 }
 
 .card-presente {
+  border: 1px solid var(--petroleo-claro);
   background: var(--branco);
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
+  box-shadow: var(--sombra-forte);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -364,6 +391,10 @@ h2,
 
 .localizacao-endereco {
   margin-bottom: 18px;
+}
+
+.localizacao-maps {
+  color: var(--branco);
 }
 
 .mapa-container {
@@ -579,6 +610,13 @@ h2,
   font-size: 0.9rem;
 }
 
+.sucesso-instrucao {
+  color: var(--petroleo);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: -8px 0 16px;
+}
+
 /* ---------- Acessibilidade: foco visível ---------- */
 button:focus-visible,
 input:focus-visible {
@@ -695,6 +733,31 @@ input:focus-visible {
   text-align: center;
   text-decoration: none;
   margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.btn-copiar-pix.copiando {
+  opacity: 0.62;
+  pointer-events: none;
+}
+
+.btn-copiar-pix.copiando::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+  animation: progresso-copia 2.5s linear forwards;
+}
+
+@keyframes progresso-copia {
+  to {
+    width: 100%;
+  }
 }
 
 /* ---------- Responsivo ---------- */
@@ -750,6 +813,9 @@ input:focus-visible {
   }
   .grid-presentes {
     grid-template-columns: 1fr;
+  }
+  .grid-presentes .card-presente:only-child {
+    grid-column: auto;
   }
 }
 

@@ -5,6 +5,7 @@ let selectedGift = null
 let scrollBackgroundPosition = 0
 let headerFireworks = null
 let heroWatcher = null
+let copyCooldownTimer = null
 
 const CATEGORY_NAMES = {
   casa: 'Casa',
@@ -174,8 +175,10 @@ async function loadGifts() {
 
 // ---------- Hero ----------
 function populateHero(party) {
-  document.getElementById('tituloFesta').textContent =
-    `${party.idade} anos de ${party.nomeAniversariante}`
+  document.getElementById('tituloFesta').innerHTML = `
+    <span class="hero-nome">${escapeHTML(party.nomeAniversariante)}</span>
+    <span class="hero-idade">${escapeHTML(`${party.idade} anos`)}</span>
+  `
   document.getElementById('mensagemFesta').textContent = party.mensagem || ''
 }
 
@@ -379,6 +382,7 @@ function setupContributionModal() {
   const closeButton = document.getElementById('modalFechar')
   const confirmButton = document.getElementById('btnConfirmarReserva')
   const successCloseButton = document.getElementById('btnFecharSucesso')
+  const copyButton = document.getElementById('copiarPix')
 
   closeButton.addEventListener('click', () => {
     closeContributionModal()
@@ -447,6 +451,34 @@ function setupContributionModal() {
     closeContributionModal()
     selectedGift = null
   })
+
+  copyButton.addEventListener('click', async (event) => {
+    event.preventDefault()
+
+    if (
+      !copyButton.dataset.pixCode ||
+      copyButton.classList.contains('copiando')
+    ) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(copyButton.dataset.pixCode)
+    } catch {
+      return
+    }
+
+    copyButton.classList.add('copiando')
+    copyButton.setAttribute('aria-disabled', 'true')
+    copyButton.textContent = 'Pix copiado'
+
+    clearTimeout(copyCooldownTimer)
+    copyCooldownTimer = setTimeout(() => {
+      copyButton.classList.remove('copiando')
+      copyButton.removeAttribute('aria-disabled')
+      copyButton.textContent = 'Copiar Pix 🔗'
+    }, 2500)
+  })
 }
 
 function openContributionModal(gift) {
@@ -492,6 +524,10 @@ function showPix(data) {
   const copyButton = document.getElementById('copiarPix')
   const qrContainer = document.getElementById('qrcodeContainer')
   qrContainer.innerHTML = ''
+  clearTimeout(copyCooldownTimer)
+  copyButton.classList.remove('copiando')
+  copyButton.removeAttribute('aria-disabled')
+  copyButton.textContent = 'Copiar Pix 🔗'
 
   if (data.qrCode) {
     copyButton.dataset.pixCode = data.qrCode
@@ -499,13 +535,6 @@ function showPix(data) {
   } else {
     copyButton.hidden = true
   }
-
-  copyButton.addEventListener('click', async function () {
-    const code = this.dataset.pixCode
-    if (!code) return
-    await navigator.clipboard.writeText(code)
-    this.textContent = 'Copiado!'
-  })
 
   if (data.qrCodeBase64) {
     const img = document.createElement('img')
