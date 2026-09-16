@@ -58,9 +58,16 @@
     <footer class="rodape">
       <section class="localizacao">
         <h2 class="localizacao-titulo">📍 Onde vai ser a festa</h2>
-        <p class="localizacao-endereco">
+        <p class="localizacao-endereco selecionavel">
           Av. Antônio de Almeida, 1115 - Jardim Marica, Mogi das Cruzes - SP,
-          08775-420
+          08775-420<br />
+          <a
+            class="localizacao-maps"
+            href="https://www.google.com/maps/search/?api=1&query=Av.%20Ant%C3%B4nio%20de%20Almeida%2C%201115%20-%20Jardim%20Marica%2C%20Mogi%20das%20Cruzes%20-%20SP%2C%2008775-420"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Abrir no Maps</a
+          >
         </p>
 
         <div class="mapa-container" id="mapaContainer">
@@ -130,6 +137,9 @@
           <div class="emoji-sucesso">🎉</div>
           <p class="sucesso-titulo">Combinado!</p>
           <p class="sucesso-texto" id="sucessoTexto"></p>
+          <p class="sucesso-instrucao">
+            Leia o QR Code no aplicativo do seu banco para fazer o Pix.
+          </p>
 
           <div class="qrcode-container" id="qrcodeContainer"></div>
 
@@ -139,7 +149,7 @@
             target="_blank"
             rel="noopener"
           >
-            Copiar código 🔗
+            Copiar Pix 🔗
           </a>
           <button class="btn-confirmar" id="btnFecharSucesso">Fechar</button>
         </div>

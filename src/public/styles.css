@@ -6,6 +6,7 @@
   --petroleo: #1b5e63;
   --petroleo-claro: #2d7a80;
   --verde: #74f320;
+  --verde-preco: #488f0a;
   --roxo: #30004d;
   --girassol: #ffc857;
   --rosa: #ff8fa3;
@@ -15,6 +16,7 @@
   --texto: #2a2a2a;
   --texto-suave: #6b6b6b;
   --sombra: 0 8px 24px rgba(27, 94, 99, 0.12);
+  --sombra-forte: 2px 2px 10px 0px rgba(0, 0, 0, 0.3);
   --raio: 20px;
 }
 
@@ -33,11 +35,19 @@ html {
 }
 
 body {
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge antiga */
+  user-select: none;
   font-family: 'Inter', sans-serif;
   background: var(--creme);
   color: var(--texto);
   min-height: 100dvh;
   overflow-x: hidden;
+}
+
+.selecionavel {
+  user-select: text;
 }
 
 body.modal-aberto {
@@ -136,6 +146,21 @@ h2,
     0 0 10px #f5f2f5;
 }
 
+.hero-nome,
+.hero-idade {
+  display: block;
+  margin: 0;
+}
+
+.hero-nome {
+  font-size: 2em;
+}
+
+.hero-idade {
+  font-size: 1.25em;
+  margin-top: -16px;
+}
+
 .hero-mensagem {
   font-size: 1.05rem;
   opacity: 0.9;
@@ -220,14 +245,16 @@ h2,
 /* ---------- Grid de presentes ---------- */
 .grid-presentes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 328px));
   gap: 24px;
+  justify-content: center;
 }
 
 .card-presente {
+  border: 1px solid var(--petroleo-claro);
   background: var(--branco);
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
+  box-shadow: var(--sombra-forte);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -266,6 +293,18 @@ h2,
   background: var(--azul-escuro);
 }
 
+.card-imagem {
+  display: block;
+  width: calc(100% - 32px);
+  height: 150px;
+  object-fit: contain;
+  margin: 16px auto 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: #fffdf9;
+  box-sizing: border-box;
+}
+
 .card-corpo {
   padding: 20px 20px 22px;
   display: flex;
@@ -301,6 +340,13 @@ h2,
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--texto);
+  margin-bottom: 14px;
+}
+
+.card-valor {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--verde-preco);
   margin-bottom: 14px;
 }
 
@@ -379,6 +425,10 @@ h2,
 
 .localizacao-endereco {
   margin-bottom: 18px;
+}
+
+.localizacao-maps {
+  color: var(--branco);
 }
 
 .mapa-container {
@@ -594,6 +644,13 @@ h2,
   font-size: 0.9rem;
 }
 
+.sucesso-instrucao {
+  color: var(--petroleo);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: -8px 0 16px;
+}
+
 /* ---------- Acessibilidade: foco visível ---------- */
 button:focus-visible,
 input:focus-visible {
@@ -710,6 +767,31 @@ input:focus-visible {
   text-align: center;
   text-decoration: none;
   margin-bottom: 10px;
+  position: relative;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.btn-copiar-pix.copiando {
+  opacity: 0.62;
+  pointer-events: none;
+}
+
+.btn-copiar-pix.copiando::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+  animation: progresso-copia 2.5s linear forwards;
+}
+
+@keyframes progresso-copia {
+  to {
+    width: 100%;
+  }
 }
 
 /* ---------- Responsivo ---------- */
@@ -765,6 +847,9 @@ input:focus-visible {
   }
   .grid-presentes {
     grid-template-columns: 1fr;
+  }
+  .grid-presentes .card-presente:only-child {
+    grid-column: auto;
   }
 }
 

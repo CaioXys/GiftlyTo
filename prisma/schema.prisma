@@ -38,24 +38,24 @@ model Gift {
 }
 
 model Contribution {
-  id            Int             @id @default(autoincrement())
-  gift          Gift            @relation(fields: [giftId], references: [id])
-  giftId        Int             @map("gift_id")
+  id           Int           @id @default(autoincrement())
+  gift         Gift          @relation(fields: [giftId], references: [id])
+  giftId       Int           @map("gift_id")
   contributors Contributor[]
-  email         String?         @map("email")
-  mpPaymentId   String?         @map("mp_payment_id")
-  message       String?         @map("message")
-  status        String          @default("pendente")
-  createdAt     DateTime        @default(now()) @map("created_at")
+  email        String?       @map("email")
+  mpPaymentId  String?       @map("mp_payment_id")
+  message      String?       @map("message")
+  status       String        @default("pendente")
+  createdAt    DateTime      @default(now()) @map("created_at")
 
   @@map("contributions")
 }
 
 model Contributor {
-  id              Int           @id @default(autoincrement())
-  contribution    Contribution  @relation(fields: [contributionId], references: [id], onDelete: Cascade)
-  contributionId  Int           @map("contribution_id")
-  name            String        @map("name")
+  id             Int          @id @default(autoincrement())
+  contribution   Contribution @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  contributionId Int          @map("contribution_id")
+  name           String       @map("name")
 
   @@map("contributors")
 }

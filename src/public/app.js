@@ -5,6 +5,7 @@ let selectedGift = null
 let scrollBackgroundPosition = 0
 let headerFireworks = null
 let heroWatcher = null
+let copyCooldownTimer = null
 
 const CATEGORY_NAMES = {
   casa: 'Casa',
@@ -174,8 +175,10 @@ async function loadGifts() {
 
 // ---------- Hero ----------
 function populateHero(party) {
-  document.getElementById('tituloFesta').textContent =
-    `${party.idade} anos de ${party.nomeAniversariante}`
+  document.getElementById('tituloFesta').innerHTML = `
+    <span class="hero-nome">${escapeHTML(party.nomeAniversariante)}</span>
+    <span class="hero-idade">${escapeHTML(`${party.idade} anos`)}</span>
+  `
   document.getElementById('mensagemFesta').textContent = party.mensagem || ''
 }
 
@@ -268,16 +271,31 @@ function createCard(gift) {
 
   card.innerHTML = `
     <div class="card-fita cat-${gift.categoria}"></div>
+    <img
+      class="card-imagem"
+      src="/assets/images/${encodeURIComponent(gift.categoria)}.png"
+      alt="Imagem de ${escapeHTML(gift.nome || 'presente')}"
+      width="296"
+      height="150"
+      decoding="async"
+    />
     <div class="card-corpo">
       <span class="card-categoria">${CATEGORY_NAMES[gift.categoria] || gift.categoria}</span>
       <h3 class="card-nome">${escapeHTML(gift.nome)}</h3>
       <p class="card-descricao">${escapeHTML(gift.descricao || '')}</p>
-      ${gift.valorSugerido ? `<p class="card-preco">${formatCurrency(gift.valorSugerido)} via Pix</p>` : ''}
+      ${gift.valorSugerido ? `<p class="card-preco"><span class="card-valor">${formatCurrency(gift.valorSugerido)}</span> via Pix</p>` : ''}
       <button class="btn-reservar" data-id="${gift.id}">
         Quero dar esse presente
       </button>
     </div>
   `
+
+  const cardImage = card.querySelector('.card-imagem')
+  cardImage.addEventListener('error', () => {
+    if (cardImage.dataset.fallback === 'true') return
+    cardImage.dataset.fallback = 'true'
+    cardImage.src = '/assets/images/outro.png'
+  })
 
   const btn = card.querySelector('.btn-reservar')
   btn.addEventListener('click', () => openContributionModal(gift))
@@ -379,6 +397,7 @@ function setupContributionModal() {
   const closeButton = document.getElementById('modalFechar')
   const confirmButton = document.getElementById('btnConfirmarReserva')
   const successCloseButton = document.getElementById('btnFecharSucesso')
+  const copyButton = document.getElementById('copiarPix')
 
   closeButton.addEventListener('click', () => {
     closeContributionModal()
@@ -447,6 +466,34 @@ function setupContributionModal() {
     closeContributionModal()
     selectedGift = null
   })
+
+  copyButton.addEventListener('click', async (event) => {
+    event.preventDefault()
+
+    if (
+      !copyButton.dataset.pixCode ||
+      copyButton.classList.contains('copiando')
+    ) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(copyButton.dataset.pixCode)
+    } catch {
+      return
+    }
+
+    copyButton.classList.add('copiando')
+    copyButton.setAttribute('aria-disabled', 'true')
+    copyButton.textContent = 'Pix copiado'
+
+    clearTimeout(copyCooldownTimer)
+    copyCooldownTimer = setTimeout(() => {
+      copyButton.classList.remove('copiando')
+      copyButton.removeAttribute('aria-disabled')
+      copyButton.textContent = 'Copiar Pix 🔗'
+    }, 2500)
+  })
 }
 
 function openContributionModal(gift) {
@@ -492,6 +539,10 @@ function showPix(data) {
   const copyButton = document.getElementById('copiarPix')
   const qrContainer = document.getElementById('qrcodeContainer')
   qrContainer.innerHTML = ''
+  clearTimeout(copyCooldownTimer)
+  copyButton.classList.remove('copiando')
+  copyButton.removeAttribute('aria-disabled')
+  copyButton.textContent = 'Copiar Pix 🔗'
 
   if (data.qrCode) {
     copyButton.dataset.pixCode = data.qrCode
@@ -499,13 +550,6 @@ function showPix(data) {
   } else {
     copyButton.hidden = true
   }
-
-  copyButton.addEventListener('click', async function () {
-    const code = this.dataset.pixCode
-    if (!code) return
-    await navigator.clipboard.writeText(code)
-    this.textContent = 'Copiado!'
-  })
 
   if (data.qrCodeBase64) {
     const img = document.createElement('img')
